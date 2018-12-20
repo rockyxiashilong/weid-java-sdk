@@ -17,27 +17,38 @@
  *       along with weidentity-java-sdk.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.webank.weid.exception;
-
-import com.webank.weid.constant.ErrorCode;
+package com.webank.weid.common;
 
 /**
- * InitWeb3sdk Exception.
- * @author tonychen
+ * public and private key object class.
+ * @author v_wbgyang
+ *
  */
-@SuppressWarnings("serial")
-public class InitWeb3jException extends WeIdBaseException {
+public class PasswordKey {
 
-    public InitWeb3jException(Throwable cause) {
-        super(ErrorCode.LOAD_WEB3J_FAILED.getCodeDesc(), cause);
+    /**
+     * the key of privateKey.
+     */
+    private String privateKey;
+    
+    /**
+     * the key of publicKey.
+     */
+    private String publicKey;
+
+    public String getPrivateKey() {
+        return privateKey;
     }
 
-    public InitWeb3jException() {
-        super(ErrorCode.LOAD_WEB3J_FAILED.getCodeDesc());
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
     }
 
-    @Override
-    public ErrorCode getErrorCode() {
-        return ErrorCode.LOAD_WEB3J_FAILED;
+    public String getPublicKey() {
+        return publicKey;
     }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    } 
 }

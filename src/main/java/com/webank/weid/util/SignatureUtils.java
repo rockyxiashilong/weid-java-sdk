@@ -19,12 +19,19 @@
 
 package com.webank.weid.util;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 
 import org.bcos.web3j.crypto.ECKeyPair;
 import org.bcos.web3j.crypto.Keys;
 import org.bcos.web3j.crypto.Sign;
 import org.bouncycastle.util.encoders.Base64;
+
+import com.webank.weid.constant.WeIdConstant;
 
 /**
  * The Signature related Utils class. Based on ECDSA Asymmetric Encryption + SHA256 Hash Algorithm.
@@ -45,10 +52,11 @@ public class SignatureUtils {
     /**
      * Generate a new Key-pair.
      *
-     * @return the EC key pair
-     * @throws Exception the exception
      */
-    public static ECKeyPair createKeyPair() throws Exception {
+    public static ECKeyPair createKeyPair() 
+        throws InvalidAlgorithmParameterException, 
+        NoSuchAlgorithmException, 
+        NoSuchProviderException {
         return Keys.createEcKeyPair();
     }
 
@@ -58,11 +66,10 @@ public class SignatureUtils {
      * @param message the message
      * @param keyPair the key pair
      * @return SignatureData
-     * @throws Exception the exception
      */
     public static Sign.SignatureData signMessage(String message, ECKeyPair keyPair)
-        throws Exception {
-        return Sign.signMessage(HashUtils.sha3(message.getBytes()), keyPair);
+        throws UnsupportedEncodingException {
+        return Sign.signMessage(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)), keyPair);
     }
 
     /**
@@ -72,13 +79,15 @@ public class SignatureUtils {
      * @param message the message
      * @param privateKeyString the private key string
      * @return SignatureData
-     * @throws Exception the exception
      */
-    public static Sign.SignatureData signMessage(String message, String privateKeyString)
-        throws Exception {
+    public static Sign.SignatureData signMessage(
+        String message,
+        String privateKeyString)
+        throws UnsupportedEncodingException {
+
         BigInteger privateKey = new BigInteger(privateKeyString);
         ECKeyPair keyPair = new ECKeyPair(privateKey, publicKeyFromPrivate(privateKey));
-        return Sign.signMessage(HashUtils.sha3(message.getBytes()), keyPair);
+        return Sign.signMessage(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)), keyPair);
     }
 
     /**
@@ -87,11 +96,14 @@ public class SignatureUtils {
      * @param message the message
      * @param signatureData the signature data
      * @return publicKey
-     * @throws Exception the exception
      */
-    public static BigInteger signatureToPublicKey(String message, Sign.SignatureData signatureData)
-        throws Exception {
-        return Sign.signedMessageToKey(HashUtils.sha3(message.getBytes()), signatureData);
+    public static BigInteger signatureToPublicKey(
+        String message,
+        Sign.SignatureData signatureData)
+        throws SignatureException, UnsupportedEncodingException {
+
+        return Sign.signedMessageToKey(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)),
+                signatureData);
     }
 
     /**
@@ -99,13 +111,16 @@ public class SignatureUtils {
      *
      * @param message This should be from the same plain-text source with the signature Data.
      * @param signatureData This must be in SignatureData. Caller should call
-     * simpleSignatureDeserialization.
+     *      impleSignatureDeserialization.
      * @param publicKey This must be in BigInteger. Caller should convert it to BigInt.
      * @return true if yes, false otherwise
-     * @throws Exception the exception
      */
     public static boolean verifySignature(
-        String message, Sign.SignatureData signatureData, BigInteger publicKey) throws Exception {
+        String message, 
+        Sign.SignatureData signatureData, 
+        BigInteger publicKey)
+        throws SignatureException, UnsupportedEncodingException {
+        
         BigInteger extractedPublicKey = signatureToPublicKey(message, signatureData);
         return extractedPublicKey.equals(publicKey);
     }
@@ -115,9 +130,8 @@ public class SignatureUtils {
      *
      * @param privateKey the private key
      * @return publicKey
-     * @throws Exception the exception
      */
-    public static BigInteger publicKeyFromPrivate(BigInteger privateKey) throws Exception {
+    public static BigInteger publicKeyFromPrivate(BigInteger privateKey) {
         return Sign.publicKeyFromPrivate(privateKey);
     }
 
@@ -126,9 +140,8 @@ public class SignatureUtils {
      *
      * @param privateKey the private key
      * @return WeIdPrivateKey
-     * @throws Exception the exception
      */
-    public static ECKeyPair createKeyPairFromPrivate(BigInteger privateKey) throws Exception {
+    public static ECKeyPair createKeyPairFromPrivate(BigInteger privateKey) {
         return ECKeyPair.create(privateKey);
     }
 
@@ -169,7 +182,7 @@ public class SignatureUtils {
      * @return the byte[]
      * @throws Exception the exception
      */
-    public static byte[] simpleKeyPairSerialization(ECKeyPair keyPair) throws Exception {
+    public static byte[] simpleKeyPairSerialization(ECKeyPair keyPair) {
         return Keys.serialize(keyPair);
     }
 
@@ -178,9 +191,8 @@ public class SignatureUtils {
      *
      * @param nonHexedBytes the non hexed bytes
      * @return the EC key pair
-     * @throws Exception the exception
      */
-    public static ECKeyPair simpleKeyPairDeserialization(byte[] nonHexedBytes) throws Exception {
+    public static ECKeyPair simpleKeyPairDeserialization(byte[] nonHexedBytes) {
         return Keys.deserialize(nonHexedBytes);
     }
 
@@ -231,7 +243,7 @@ public class SignatureUtils {
      * @return the sign. signature data
      */
     public static Sign.SignatureData rawSignatureDeserialization(int v, byte[] r, byte[] s) {
-        byte vByte = (byte) v;
-        return new Sign.SignatureData(vByte, r, s);
+        byte valueByte = (byte) v;
+        return new Sign.SignatureData(valueByte, r, s);
     }
 }
