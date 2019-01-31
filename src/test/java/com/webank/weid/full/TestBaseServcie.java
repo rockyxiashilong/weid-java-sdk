@@ -41,18 +41,20 @@ import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.contract.WeIdContract;
 import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.base.Credential;
+import com.webank.weid.protocol.base.CredentialWrapper;
 import com.webank.weid.protocol.base.WeIdPrivateKey;
 import com.webank.weid.protocol.base.WeIdPublicKey;
+import com.webank.weid.protocol.request.CptMapArgs;
 import com.webank.weid.protocol.request.CreateCredentialArgs;
 import com.webank.weid.protocol.request.CreateWeIdArgs;
 import com.webank.weid.protocol.request.RegisterAuthorityIssuerArgs;
-import com.webank.weid.protocol.request.RegisterCptArgs;
 import com.webank.weid.protocol.request.SetAuthenticationArgs;
 import com.webank.weid.protocol.request.SetPublicKeyArgs;
 import com.webank.weid.protocol.request.SetServiceArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.util.WeIdUtils;
+
 
 /**
  * testing basic method classes.
@@ -79,7 +81,7 @@ public abstract class TestBaseServcie extends BaseTest {
 
     protected static CreateCredentialArgs createCredentialArgs = null;
 
-    protected static RegisterCptArgs registerCptArgs = null;
+    protected static CptMapArgs registerCptArgs = null;
 
     protected static CptBaseInfo cptBaseInfo = null;
 
@@ -96,7 +98,7 @@ public abstract class TestBaseServcie extends BaseTest {
                 initIssuer("org1.txt");
                 isInitIssuer = true;
             } catch (Exception e) {
-                logger.error("initIssuer error",e);
+                logger.error("initIssuer error", e);
                 Assert.assertTrue(false);
             }
         }
@@ -111,7 +113,7 @@ public abstract class TestBaseServcie extends BaseTest {
             createWeIdNew = this.createWeId();
         }
         if (null == createCredentialArgs) {
-            registerCptArgs = TestBaseUtil.buildRegisterCptArgs(createWeIdResultWithSetAttr);
+            registerCptArgs = TestBaseUtil.buildCptArgs(createWeIdResultWithSetAttr);
             createCredentialArgs =
                 TestBaseUtil.buildCreateCredentialArgs(createWeIdResultWithSetAttr);
             cptBaseInfo = this.registerCpt(createWeIdResultWithSetAttr, registerCptArgs);
@@ -174,12 +176,12 @@ public abstract class TestBaseServcie extends BaseTest {
     /**
      * verifyCredential.
      * 
-     * @param credential credential
+     * @param credentialWrapper credentialWrapper
      * @return
      */
-    protected ResponseData<Boolean> verifyCredential(Credential credential) {
+    protected ResponseData<Boolean> verifyCredential(CredentialWrapper credentialWrapper) {
 
-        ResponseData<Boolean> response = credentialService.verifyCredential(credential);
+        ResponseData<Boolean> response = credentialService.verify(credentialWrapper);
         logger.info("verifyCredentialWithSpecifiedPubKey result:");
         BeanUtil.print(response);
 
@@ -192,9 +194,9 @@ public abstract class TestBaseServcie extends BaseTest {
      * @param createCredentialArgs createCredentialArgs
      * @return
      */
-    protected Credential createCredential(CreateCredentialArgs createCredentialArgs) {
+    protected CredentialWrapper createCredential(CreateCredentialArgs createCredentialArgs) {
 
-        ResponseData<Credential> response =
+        ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
         logger.info("createCredential result:");
         BeanUtil.print(response);
@@ -210,12 +212,11 @@ public abstract class TestBaseServcie extends BaseTest {
      * 
      * @param createWeId createWeId
      * @param registerCptArgs registerCptArgs
-     * @param isRegisterAuthorityIssuer isRegisterAuthorityIssuer
      * @return
      */
     protected CptBaseInfo registerCpt(
         CreateWeIdDataResult createWeId,
-        RegisterCptArgs registerCptArgs) {
+        CptMapArgs registerCptArgs) {
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(registerCptArgs);
         logger.info("registerCpt result:");
@@ -231,12 +232,11 @@ public abstract class TestBaseServcie extends BaseTest {
      * cpt register.
      * 
      * @param createWeId createWeId
-     * @param isRegisterAuthorityIssuer isRegisterAuthorityIssuer
      * @return
      */
     protected CptBaseInfo registerCpt(CreateWeIdDataResult createWeId) {
 
-        RegisterCptArgs registerCptArgs = TestBaseUtil.buildRegisterCptArgs(createWeId);
+        CptMapArgs registerCptArgs = TestBaseUtil.buildCptArgs(createWeId);
 
         CptBaseInfo cptBaseInfo = registerCpt(createWeId, registerCptArgs);
 
@@ -435,5 +435,19 @@ public abstract class TestBaseServcie extends BaseTest {
             }
         };
     }
-            
+
+    protected Credential copyCredential(Credential credential) {
+        Credential ct = new Credential();
+        ct.setSignature(credential.getSignature());
+        ct.setContext(credential.getContext());
+        ct.setClaim(credential.getClaim());
+        ct.setIssuranceDate(credential.getIssuranceDate());
+        ct.setCptId(credential.getCptId());
+        ct.setExpirationDate(credential.getExpirationDate());
+        ct.setIssuer(credential.getIssuer());
+        ct.setId(credential.getId());
+        return ct;
+    }
+
+
 }

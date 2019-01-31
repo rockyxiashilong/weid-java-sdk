@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -48,6 +48,7 @@ import com.webank.weid.contract.CommitteeMemberController;
 import com.webank.weid.contract.CommitteeMemberData;
 import com.webank.weid.contract.CptController;
 import com.webank.weid.contract.CptData;
+import com.webank.weid.contract.EvidenceFactory;
 import com.webank.weid.contract.RoleController;
 import com.webank.weid.contract.WeIdContract;
 
@@ -149,6 +150,7 @@ public class DeployContract {
         String weIdContractAddress = deployWeIdContract();
         String authorityIssuerDataAddress = deployAuthorityIssuerContracts();
         deployCptContracts(authorityIssuerDataAddress, weIdContractAddress);
+        deployEvidenceContracts();
     }
 
     private static String deployWeIdContract() {
@@ -167,7 +169,7 @@ public class DeployContract {
             WeIdContract weIdContract =
                 f.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
             String contractAddress = weIdContract.getContractAddress();
-            writeAddressToFile(contractAddress,"weIdContract.address");
+            writeAddressToFile(contractAddress, "weIdContract.address");
             return contractAddress;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error("WeIdContract deploy exception", e);
@@ -206,7 +208,7 @@ public class DeployContract {
             CptController cptController =
                 f2.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
             String cptControllerAddress = cptController.getContractAddress();
-            writeAddressToFile(cptControllerAddress,"cptController.address");
+            writeAddressToFile(cptControllerAddress, "cptController.address");
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error("CptController deploy exception", e);
         }
@@ -312,7 +314,7 @@ public class DeployContract {
                     TimeUnit.SECONDS);
             String authorityIssuerControllerAddress =
                 authorityIssuerController.getContractAddress();
-            writeAddressToFile(authorityIssuerControllerAddress,"authorityIssuer.address");
+            writeAddressToFile(authorityIssuerControllerAddress, "authorityIssuer.address");
             return authorityIssuerControllerAddress;
         } catch (Exception e) {
             logger.error("AuthorityIssuerController deployment error:", e);
@@ -320,6 +322,30 @@ public class DeployContract {
         return authorityIssuerDataAddress;
     }
 
+    private static String deployEvidenceContracts() {
+        if (null == web3j) {
+            loadConfig();
+        }
+
+        try {
+            Future<EvidenceFactory> f =
+                EvidenceFactory.deploy(
+                    web3j,
+                    credentials,
+                    WeIdConstant.GAS_PRICE,
+                    WeIdConstant.GAS_LIMIT,
+                    WeIdConstant.INILITIAL_VALUE
+                );
+            EvidenceFactory evidenceFactory = f
+                .get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+            String evidenceFactoryAddress = evidenceFactory.getContractAddress();
+            writeAddressToFile(evidenceFactoryAddress, "evidenceController.address");
+            return evidenceFactoryAddress;
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error("EvidenceFactory deploy exception", e);
+        }
+        return StringUtils.EMPTY;
+    }
 
     private static void writeAddressToFile(
         String contractAddress,

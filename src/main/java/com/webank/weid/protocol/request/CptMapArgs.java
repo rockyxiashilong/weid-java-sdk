@@ -19,26 +19,26 @@
 
 package com.webank.weid.protocol.request;
 
+import java.util.Map;
+
 import lombok.Data;
 
-import com.webank.weid.protocol.base.Credential;
-import com.webank.weid.protocol.base.WeIdPublicKey;
+import com.webank.weid.protocol.base.WeIdAuthentication;
 
 /**
- * The Arguments for the following SDK API: verifyCredential().
+ * The Arguments for the SDK API register CPT. The cptJsonSchema is Map.
  *
- * @author chaoxinhu 2018.10
+ * @author lingfenghe
  */
 @Data
-public class VerifyCredentialArgs {
+public class CptMapArgs {
 
     /**
-     * Required: The Credential content.
+     * Required: weId authority  for this CPT.
      */
-    private Credential credential;
-
+    private WeIdAuthentication weIdAuthentication;
     /**
-     * Optional: The public key passed in.
+     * Required: The json schema content defined for this CPT.
      */
-    private WeIdPublicKey weIdPublicKey;
+    private Map<String, Object> cptJsonSchema;
 }

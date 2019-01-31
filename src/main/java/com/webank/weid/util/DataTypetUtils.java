@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bcos.web3j.abi.datatypes.Address;
 import org.bcos.web3j.abi.datatypes.DynamicArray;
 import org.bcos.web3j.abi.datatypes.DynamicBytes;
 import org.bcos.web3j.abi.datatypes.StaticArray;
@@ -69,6 +70,9 @@ public final class DataTypetUtils {
     public static Bytes32 stringToBytes32(String string) {
 
         byte[] byteValueLen32 = new byte[32];
+        if (StringUtils.isEmpty(string)) {
+            return new Bytes32(byteValueLen32);
+        }
         try {
             byte[] byteValue = string.getBytes(WeIdConstant.UTF_8);
             System.arraycopy(byteValue, 0, byteValueLen32, 0, byteValue.length);
@@ -284,14 +288,30 @@ public final class DataTypetUtils {
     }
 
     /**
+     * String array to bytes 32 static array.
+     *
+     * @param addressArray the string array
+     * @return the static array
+     */
+    public static StaticArray<Address> addressArrayToAddressStaticArray(Address[] addressArray) {
+
+        List<Address> addressList = new ArrayList<>();
+        for (int i = 0; i < addressArray.length; i++) {
+            addressList.add(addressArray[i]);
+        }
+        StaticArray<Address> addressStaticArray = new StaticArray<Address>(addressList);
+        return addressStaticArray;
+    }
+
+    /**
      * Bytes 32 dynamic array to string array without trim.
      *
      * @param bytes32DynamicArray the bytes 32 dynamic array
      * @return the string[]
      */
     public static String[] bytes32DynamicArrayToStringArrayWithoutTrim(
-
         DynamicArray<Bytes32> bytes32DynamicArray) {
+
         List<Bytes32> bytes32List = bytes32DynamicArray.getValue();
         String[] stringArray = new String[bytes32List.size()];
         for (int i = 0; i < bytes32List.size(); i++) {

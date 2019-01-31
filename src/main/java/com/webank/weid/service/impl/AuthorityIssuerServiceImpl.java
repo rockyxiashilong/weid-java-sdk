@@ -37,7 +37,6 @@ import org.bcos.web3j.abi.datatypes.generated.Int256;
 import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.webank.weid.config.ContractConfig;
@@ -68,8 +67,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     private static AuthorityIssuerController authorityIssuerController;
     private static String authorityIssuerControllerAddress;
 
-    @Autowired
-    private WeIdService weIdService;
+    private WeIdService weIdService = new WeIdServiceImpl();
 
     /**
      * Instantiates a new authority issuer service impl.
@@ -311,7 +309,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
 
     private ResponseData<Boolean> checkRegisterAuthorityIssuerArgs(
         RegisterAuthorityIssuerArgs args) {
-        
+
         if (args == null) {
             return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
         }
@@ -342,7 +340,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     }
 
     private ResponseData<Boolean> checkRemoveAuthorityIssuerArgs(RemoveAuthorityIssuerArgs args) {
-        
+
         if (args == null) {
             return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
         }
@@ -359,7 +357,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     }
 
     private ResponseData<Boolean> checkAuthorityIssuerArgsValidity(AuthorityIssuer args) {
-        
+
         if (args == null) {
             return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
         }

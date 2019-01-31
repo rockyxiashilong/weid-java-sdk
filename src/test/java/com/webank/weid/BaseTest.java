@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -34,12 +34,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.webank.weid.rpc.AuthorityIssuerService;
 import com.webank.weid.rpc.CptService;
 import com.webank.weid.rpc.CredentialService;
+import com.webank.weid.rpc.EvidenceService;
 import com.webank.weid.rpc.WeIdService;
 import com.webank.weid.service.BaseService;
 
 /**
  * Test base class.
- * 
+ *
  * @author v_wbgyang
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,20 +59,23 @@ public abstract class BaseTest extends BaseService {
 
     @Autowired
     protected CredentialService credentialService;
+    
+    @Autowired
+    protected EvidenceService evidenceService;
 
     @Autowired
     protected ToolConf toolConf;
-    
+
     /**
      * the private key of sdk is a BigInteger,which needs to be used
      * when registering authority.
-     * 
+     *
      */
     protected String privateKey;
 
     /**
      *  initialization some for test.
-     *  
+     *
      */
     @Before
     public void setUp() {
@@ -83,7 +87,7 @@ public abstract class BaseTest extends BaseService {
 
     /**
      *  tearDown some for test.
-     *  
+     *
      */
     @After
     public void tearDown() {

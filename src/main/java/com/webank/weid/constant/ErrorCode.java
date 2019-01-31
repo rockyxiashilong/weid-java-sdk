@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -40,7 +40,9 @@ public enum ErrorCode {
      * cpt id generated for authority issuer exceeds limited max value.
      */
     CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX(
-        500302, "cpt id generated for authority issuer exceeds limited max value"),
+        500302,
+        "cpt id generated for authority issuer exceeds limited max value"
+    ),
 
     /**
      * cpt publisher does not exist.
@@ -53,14 +55,29 @@ public enum ErrorCode {
     CPT_JSON_SCHEMA_INVALID(100301, "cpt json schema is invalid"),
 
     /**
+     * The cpt json schema null.
+     */
+    CPT_JSON_SCHEMA_NULL(100302, "cpt json schema is null"),
+
+    /**
+     * cptId is null.
+     */
+    CPT_ID_NULL(100303, "cptId is null"),
+
+    /**
+     * cpt event log is null.
+     */
+    CPT_EVENT_LOG_NULL(100304, "cpt event log is null."),
+
+    /**
      * Credential main error code.
      */
     CREDENTIAL_ERROR(100400, "error occured during processing credential tasks"),
 
     /**
-     * The exact error codes in credential tasks.
+     * The credential does not exist on chain (evidence not found).
      */
-    CREDENTIAL_NOT_EXISTS(100401, "credential does not exist"),
+    CREDENTIAL_EVIDENCE_NOT_EXISTS_ON_CHAIN(100401, "credential evidence does not exist on chain"),
 
     /**
      * The credential expired.
@@ -76,7 +93,9 @@ public enum ErrorCode {
      * The credential issuer not exists in list.
      */
     CREDENTIAL_ISSUER_NOT_EXISTS_IN_LIST(
-        100404, "credential issuer does not exist in the authority issuer list"),
+        100404,
+        "credential issuer does not exist in the authority issuer list"
+    ),
 
     /**
      * The credential signature broken.
@@ -137,11 +156,42 @@ public enum ErrorCode {
      * The credential issuer does not have a valid WeIdentity DID document.
      */
     CREDENTIAL_WEID_DOCUMENT_ILLEGAL(100417, "weid document illegal"),
-    
+
     /**
      * The credential issuer is invalid.
      */
     CREDENTIAL_ISSUER_INVALID(100418, "credential issuer invalid"),
+
+    /**
+     * The credential credential verify signature is exception.
+     */
+    CREDENTIAL_EXCEPTION_VERIFYSIGNATURE(100419, "credential verify signature exception"),
+    
+    /**
+     * The credential evidence contract failure: illegal input.
+     */
+    CREDENTIAL_EVIDENCE_CONTRACT_FAILURE_ILLEAGAL_INPUT(
+        500401,
+        "credential evidence contract failure: illegal input"
+    ),
+
+    /**
+     * The credential evidence base error.
+     */
+    CREDENTIAL_EVIDENCE_BASE_ERROR(
+        100500,
+        "generic error when processing credential evidence tasks"
+    ),
+
+    /**
+     * The credential evidence hash mismatch.
+     */
+    CREDENTIAL_EVIDENCE_HASH_MISMATCH(100501, "credential evidence hash mismatch"),
+
+    /**
+     * The credential evidence id mismatch.
+     */
+    CREDENTIAL_EVIDENCE_ID_MISMATCH(100502, "credential evidence id mismatch"),
 
     /**
      * Authority issuer main error code.
@@ -167,8 +217,10 @@ public enum ErrorCode {
     /**
      * The authority issuer opcode mismatch.
      */
-    AUTHORITY_ISSUER_OPCODE_MISMATCH(100205,
-        "opcode in event log does not match the desired opcode"),
+    AUTHORITY_ISSUER_OPCODE_MISMATCH(
+        100205,
+        "opcode in event log does not match the desired opcode"
+    ),
 
     /**
      * The authority issuer name illegal.
@@ -179,25 +231,33 @@ public enum ErrorCode {
      * The authority issuer accvalue illegal.
      */
     AUTHORITY_ISSUER_ACCVALUE_ILLEAGAL(
-        100207, "the authority issuer accumulator value is illegal (integer value required)"),
+        100207,
+        "the authority issuer accumulator value is illegal (integer value required)"
+    ),
 
     /**
      * The Authority Issuer Contract level error: subject already exists.
      */
     AUTHORITY_ISSUER_CONTRACT_ERROR_ALREADY_EXIST(
-        500201, "the authority issuer contract error: the subject already exists"),
+        500201,
+        "the authority issuer contract error: the subject already exists"
+    ),
 
     /**
      * The Authority Issuer Contract level error: subject already exists.
      */
     AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS(
-        500202, "the authority issuer contract error: the subject does not exist"),
+        500202,
+        "the authority issuer contract error: the subject does not exist"
+    ),
 
     /**
      * The Authority Issuer Contract level error: no permission.
      */
     AUTHORITY_ISSUER_CONTRACT_ERROR_NO_PERMISSION(
-        500203, "the authority issuer contract error: no permission"),
+        500203,
+        "the authority issuer contract error: no permission"
+    ),
 
     /**
      * The weid invalid.
@@ -213,7 +273,9 @@ public enum ErrorCode {
      * private key is invalid.
      */
     WEID_PRIVATEKEY_INVALID(
-        100103, "the input private key is invalid, please check and input your private key."),
+        100103,
+        "the input private key is invalid, please check and input your private key."
+    ),
 
     /**
      * weid does not exist.
@@ -233,13 +295,20 @@ public enum ErrorCode {
     /**
      * create keypair exception.
      */
-    WEID_KEYPAIR_CREATE_FAILED(10107, "create keypair faild."),
+    WEID_KEYPAIR_CREATE_FAILED(100107, "create keypair faild."),
 
     /**
      * public key and private key are not a keypair.
      */
     WEID_PUBLICKEY_AND_PRIVATEKEY_NOT_MATCHED(
-        10108, "the public key and private key are not matched."),
+        100108,
+        "the public key and private key are not matched."
+    ),
+
+    /**
+     * the authority of the weIdentity DID is invalid.
+     */
+    WEID_AUTHORITY_INVALID(100109, "the authority of the weIdentity DID is invalid."),
 
     /**
      * transaction timeout.
@@ -269,28 +338,17 @@ public enum ErrorCode {
     /**
      * weidentity base exceptions or error.
      */
-    BASE_ERROR(160007, "baes exception error, please check error log."),
+    BASE_ERROR(160007, "baes exception error, please check the error log."),
 
     /**
      * weidentity data type case exceptions or error.
      */
-    DATA_TYPE_CASE_ERROR(160008, "data type cast exception error, please check error log."),
-
-    /**
-     * resolve eventLog identity or updated or previousBlock is null.
-     */
-    RESOLVE_EVENT_LOG_NULL_ERROR(160009, "resolve eventLog identity or updated or previousBlock "
-        + "is null, please check error log."),
-
-    /**
-     * resolve eventLog exceptions or error.
-     */
-    RESOLVE_EVENT_LOG_ERROR(160010, "resolve eventLog exception or error, please check error log."),
+    DATA_TYPE_CASE_ERROR(160008, "data type cast exception error, please check the error log."),
 
     /**
      * other uncatched exceptions or error.
      */
-    UNKNOW_ERROR(160003, "unknow error, please check error log.");
+    UNKNOW_ERROR(160003, "unknow error, please check the error log.");
 
     /**
      * error code.

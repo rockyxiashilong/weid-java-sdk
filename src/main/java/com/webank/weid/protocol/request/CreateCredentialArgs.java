@@ -19,9 +19,12 @@
 
 package com.webank.weid.protocol.request;
 
+import java.util.Map;
+
 import lombok.Data;
 
 import com.webank.weid.protocol.base.WeIdPrivateKey;
+
 
 /**
  * The Arguments for the following SDK API: createCredential().
@@ -49,7 +52,7 @@ public class CreateCredentialArgs {
     /**
      * Required: The claim data.
      */
-    private String claim;
+    private Map<String, Object> claim;
 
     /**
      * Required: The private key structure used for signing.
