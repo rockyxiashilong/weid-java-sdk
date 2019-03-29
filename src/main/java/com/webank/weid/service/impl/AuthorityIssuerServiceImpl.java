@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -20,6 +20,7 @@
 package com.webank.weid.service.impl;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,6 +53,7 @@ import com.webank.weid.rpc.AuthorityIssuerService;
 import com.webank.weid.rpc.WeIdService;
 import com.webank.weid.service.BaseService;
 import com.webank.weid.util.DataTypetUtils;
+import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
 
 /**
@@ -106,10 +108,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     @Override
     public ResponseData<Boolean> registerAuthorityIssuer(RegisterAuthorityIssuerArgs args) {
 
-        ResponseData<Boolean> innerResponseData = checkRegisterAuthorityIssuerArgs(args);
-        if (!innerResponseData.getResult()) {
-            return new ResponseData<>(
-                false, innerResponseData.getErrorCode(), innerResponseData.getErrorMessage());
+        ErrorCode innerResponseData = checkRegisterAuthorityIssuerArgs(args);
+        if (ErrorCode.SUCCESS.getCode() != innerResponseData.getCode()) {
+            return new ResponseData<>(false, innerResponseData);
         }
 
         AuthorityIssuer authorityIssuer = args.getAuthorityIssuer();
@@ -122,7 +123,8 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
         try {
             DynamicBytes accValue = new DynamicBytes(authorityIssuer
                 .getAccValue()
-                .getBytes(WeIdConstant.UTF_8));
+                .getBytes(StandardCharsets.UTF_8)
+            );
             reloadContract(args.getWeIdPrivateKey().getPrivateKey());
             Future<TransactionReceipt> future = authorityIssuerController.addAuthorityIssuer(
                 addr,
@@ -134,20 +136,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                 WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT,
                 TimeUnit.SECONDS
             );
-            List<AuthorityIssuerRetLogEventResponse> eventList =
-                AuthorityIssuerController.getAuthorityIssuerRetLogEvents(receipt);
-
-            AuthorityIssuerRetLogEventResponse event = eventList.get(0);
-            if (event != null) {
-                return verifyAuthorityIssuerRelatedEvent(
-                    event,
-                    addr,
-                    WeIdConstant.ADD_AUTHORITY_ISSUER_OPCODE
-                );
-            } else {
-                logger.error(
-                    "register authority issuer failed due to transcation event decoding failure.");
-                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
+            Boolean result = resolveRegisterAuthorityIssuerEvents(receipt);
+            if (result) {
+                return new ResponseData<>(result, ErrorCode.SUCCESS);
             }
         } catch (TimeoutException e) {
             logger.error("register authority issuer failed due to system timeout. ", e);
@@ -157,7 +148,53 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             return new ResponseData<>(false, ErrorCode.TRANSACTION_EXECUTE_ERROR);
         } catch (Exception e) {
             logger.error("register authority issuer failed.", e);
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
+        }
+        return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
+    }
+
+    /**
+     * Register a new Authority Issuer on Chain with preset transaction hex value. The inputParam is
+     * a Json String, with two keys: WeIdentity DID and Name. Parameters will be ordered as
+     * mentioned after validity check; then transactionHex will be sent to blockchain.
+     *
+     * @param transactionHex the transaction hex value
+     * @return true if succeeds, false otherwise
+     */
+    @Override
+    public ResponseData<String> registerAuthorityIssuer(String transactionHex) {
+        try {
+            if (StringUtils.isEmpty(transactionHex)) {
+                logger.error("AuthorityIssuer transaction error");
+                return new ResponseData<>(StringUtils.EMPTY, ErrorCode.ILLEGAL_INPUT);
+            }
+            TransactionReceipt transactionReceipt = TransactionUtils
+                .sendTransaction(getWeb3j(), transactionHex);
+            Boolean result = resolveRegisterAuthorityIssuerEvents(transactionReceipt);
+            if (result) {
+                return new ResponseData<>(Boolean.TRUE.toString(), ErrorCode.SUCCESS);
+            }
+        } catch (Exception e) {
+            logger.error("[registerAuthorityIssuer] register failed due to transaction error.", e);
+        }
+        return new ResponseData<>(StringUtils.EMPTY, ErrorCode.TRANSACTION_EXECUTE_ERROR);
+    }
+
+    private Boolean resolveRegisterAuthorityIssuerEvents(
+        TransactionReceipt transactionReceipt) {
+        List<AuthorityIssuerRetLogEventResponse> eventList =
+            AuthorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
+
+        AuthorityIssuerRetLogEventResponse event = eventList.get(0);
+        if (event != null) {
+            ErrorCode errorCode = verifyAuthorityIssuerRelatedEvent(
+                event,
+                WeIdConstant.ADD_AUTHORITY_ISSUER_OPCODE
+            );
+            return (ErrorCode.SUCCESS == errorCode);
+        } else {
+            logger.error(
+                "register authority issuer failed due to transcation event decoding failure.");
+            return false;
         }
     }
 
@@ -170,13 +207,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     @Override
     public ResponseData<Boolean> removeAuthorityIssuer(RemoveAuthorityIssuerArgs args) {
 
-        ResponseData<Boolean> innerResponseData = checkRemoveAuthorityIssuerArgs(args);
-        if (!innerResponseData.getResult()) {
-            return new ResponseData<>(
-                false,
-                innerResponseData.getErrorCode(),
-                innerResponseData.getErrorMessage()
-            );
+        ErrorCode innerResponseData = checkRemoveAuthorityIssuerArgs(args);
+        if (ErrorCode.SUCCESS.getCode() != innerResponseData.getCode()) {
+            return new ResponseData<>(false, innerResponseData);
         }
 
         String weId = args.getWeId();
@@ -192,11 +225,15 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
 
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
             if (event != null) {
-                return verifyAuthorityIssuerRelatedEvent(
+                ErrorCode errorCode = verifyAuthorityIssuerRelatedEvent(
                     event,
-                    addr,
                     WeIdConstant.REMOVE_AUTHORITY_ISSUER_OPCODE
                 );
+                if (ErrorCode.SUCCESS.getCode() != errorCode.getCode()) {
+                    return new ResponseData<>(false, errorCode);
+                } else {
+                    return new ResponseData<>(true, errorCode);
+                }
             } else {
                 logger.error("remove authority issuer failed, transcation event decoding failure.");
                 return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
@@ -233,13 +270,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                 future.get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS).getValue();
             responseData.setResult(result);
             if (result) {
-                responseData.setErrorCode(ErrorCode.SUCCESS.getCode());
-                responseData.setErrorMessage(ErrorCode.SUCCESS.getCodeDesc());
+                responseData.setErrorCode(ErrorCode.SUCCESS);
             } else {
-                responseData
-                    .setErrorCode(ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS.getCode());
-                responseData.setErrorMessage(
-                    ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS.getCodeDesc());
+                responseData.setErrorCode(ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS);
             }
         } catch (TimeoutException e) {
             logger.error("check authority issuer id failed due to system timeout. ", e);
@@ -262,10 +295,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
      */
     @Override
     public ResponseData<AuthorityIssuer> queryAuthorityIssuerInfo(String weId) {
-        ResponseData<AuthorityIssuer> responseData = new ResponseData<AuthorityIssuer>();
-
+        ResponseData<AuthorityIssuer> responseData = new ResponseData<>();
         if (!WeIdUtils.isWeIdValid(weId)) {
-            return new ResponseData<AuthorityIssuer>(null, ErrorCode.WEID_INVALID);
+            return new ResponseData<>(null, ErrorCode.WEID_INVALID);
         }
         Address addr = new Address(WeIdUtils.convertWeIdToAddress(weId));
         try {
@@ -274,7 +306,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                     .getAuthorityIssuerInfoNonAccValue(addr)
                     .get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
             if (rawResult == null) {
-                return new ResponseData<AuthorityIssuer>(null, ErrorCode.AUTHORITY_ISSUER_ERROR);
+                return new ResponseData<>(null, ErrorCode.AUTHORITY_ISSUER_ERROR);
             }
 
             DynamicArray<Bytes32> bytes32Attributes = (DynamicArray<Bytes32>) rawResult.get(0);
@@ -286,8 +318,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             Long createDate = Long
                 .valueOf(int256Attributes.getValue().get(0).getValue().longValue());
             if (StringUtils.isEmpty(name) && createDate.equals(WeIdConstant.LONG_VALUE_ZERO)) {
-                return new ResponseData<AuthorityIssuer>(
-                    null, ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS);
+                return new ResponseData<>(
+                    null, ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS
+                );
             }
             result.setName(name);
             result.setCreated(createDate);
@@ -296,133 +329,97 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             responseData.setResult(result);
         } catch (TimeoutException e) {
             logger.error("query authority issuer failed due to system timeout. ", e);
-            return new ResponseData<AuthorityIssuer>(null, ErrorCode.TRANSACTION_TIMEOUT);
+            return new ResponseData<>(null, ErrorCode.TRANSACTION_TIMEOUT);
         } catch (InterruptedException | ExecutionException e) {
             logger.error("query authority issuer failed due to transaction error. ", e);
-            return new ResponseData<AuthorityIssuer>(null, ErrorCode.TRANSACTION_EXECUTE_ERROR);
+            return new ResponseData<>(null, ErrorCode.TRANSACTION_EXECUTE_ERROR);
         } catch (Exception e) {
             logger.error("query authority issuer failed.", e);
-            return new ResponseData<AuthorityIssuer>(null, ErrorCode.AUTHORITY_ISSUER_ERROR);
+            return new ResponseData<>(null, ErrorCode.AUTHORITY_ISSUER_ERROR);
         }
         return responseData;
     }
 
-    private ResponseData<Boolean> checkRegisterAuthorityIssuerArgs(
+    private ErrorCode checkRegisterAuthorityIssuerArgs(
         RegisterAuthorityIssuerArgs args) {
 
         if (args == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
-        ResponseData<Boolean> checkResponse = checkAuthorityIssuerArgsValidity(
+        ErrorCode errorCode = checkAuthorityIssuerArgsValidity(
             args.getAuthorityIssuer()
         );
-        if (!checkResponse.getResult()) {
+
+        if (ErrorCode.SUCCESS.getCode() != errorCode.getCode()) {
             logger.error("register authority issuer format error!");
-            return new ResponseData<>(
-                false,
-                checkResponse.getErrorCode(),
-                checkResponse.getErrorMessage()
-            );
+            return errorCode;
         }
         if (args.getWeIdPrivateKey() == null
             || StringUtils.isEmpty(args.getWeIdPrivateKey().getPrivateKey())) {
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_PRIVATE_KEY_ILLEGAL);
+            return ErrorCode.AUTHORITY_ISSUER_PRIVATE_KEY_ILLEGAL;
         }
         // Need an extra check for the existence of WeIdentity DID on chain, in Register Case.
         ResponseData<Boolean> innerResponseData = weIdService
             .isWeIdExist(args.getAuthorityIssuer().getWeId());
         if (!innerResponseData.getResult()) {
-            return new ResponseData<>(false, ErrorCode.WEID_INVALID);
+            return ErrorCode.WEID_INVALID;
         }
-        ResponseData<Boolean> responseData = new ResponseData<Boolean>();
-        responseData.setResult(true);
-        return responseData;
+        return ErrorCode.SUCCESS;
     }
 
-    private ResponseData<Boolean> checkRemoveAuthorityIssuerArgs(RemoveAuthorityIssuerArgs args) {
+    private ErrorCode checkRemoveAuthorityIssuerArgs(RemoveAuthorityIssuerArgs args) {
 
         if (args == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
         if (!WeIdUtils.isWeIdValid(args.getWeId())) {
-            return new ResponseData<>(false, ErrorCode.WEID_INVALID);
+            return ErrorCode.WEID_INVALID;
         }
         if (args.getWeIdPrivateKey() == null
             || StringUtils.isEmpty(args.getWeIdPrivateKey().getPrivateKey())) {
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_PRIVATE_KEY_ILLEGAL);
+            return ErrorCode.AUTHORITY_ISSUER_PRIVATE_KEY_ILLEGAL;
         }
-        ResponseData<Boolean> responseData = new ResponseData<Boolean>();
-        responseData.setResult(true);
-        return responseData;
+        return ErrorCode.SUCCESS;
     }
 
-    private ResponseData<Boolean> checkAuthorityIssuerArgsValidity(AuthorityIssuer args) {
+    private ErrorCode checkAuthorityIssuerArgsValidity(AuthorityIssuer args) {
 
         if (args == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
         if (!WeIdUtils.isWeIdValid(args.getWeId())) {
-            return new ResponseData<>(false, ErrorCode.WEID_INVALID);
+            return ErrorCode.WEID_INVALID;
         }
         String name = args.getName();
         if (!isValidAuthorityIssuerName(name)) {
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_NAME_ILLEGAL);
+            return ErrorCode.AUTHORITY_ISSUER_NAME_ILLEGAL;
         }
         String accValue = args.getAccValue();
         try {
             BigInteger accValueBigInteger = new BigInteger(accValue);
             logger.info(args.getWeId() + " accValue is: " + accValueBigInteger.longValue());
         } catch (Exception e) {
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ACCVALUE_ILLEAGAL);
+            return ErrorCode.AUTHORITY_ISSUER_ACCVALUE_ILLEAGAL;
         }
-        ResponseData<Boolean> responseData = new ResponseData<Boolean>();
-        responseData.setResult(true);
-        return responseData;
+
+        return ErrorCode.SUCCESS;
     }
 
-    private ResponseData<Boolean> verifyAuthorityIssuerRelatedEvent(
+    private ErrorCode verifyAuthorityIssuerRelatedEvent(
         AuthorityIssuerRetLogEventResponse event,
-        Address addr,
         Integer opcode) {
 
-        ResponseData<Boolean> responseData = new ResponseData<Boolean>();
         if (event.addr == null || event.operation == null || event.retCode == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
-        if (event.addr.getValue().equals(addr.getValue())) {
-            Integer eventOpcode = event.operation.getValue().intValue();
-            if (eventOpcode.equals(opcode)) {
-                Integer eventRetCode = event.retCode.getValue().intValue();
-                if (eventRetCode.equals(ErrorCode.SUCCESS.getCode())) {
-                    return new ResponseData<>(true, ErrorCode.SUCCESS);
-                } else {
-                    responseData.setResult(false);
-                    responseData.setErrorCode(eventRetCode);
-                    if (eventRetCode.equals(
-                        ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_ALREADY_EXIST.getCode())) {
-                        responseData.setErrorMessage(
-                            ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_ALREADY_EXIST.getCodeDesc());
-                    } else if (eventRetCode.equals(
-                        ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS.getCode())) {
-                        responseData.setErrorMessage(
-                            ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NOT_EXISTS.getCodeDesc());
-                    } else if (eventRetCode.equals(
-                        ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NO_PERMISSION.getCode())) {
-                        responseData.setErrorMessage(
-                            ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NO_PERMISSION.getCodeDesc());
-                    } else {
-                        responseData.setErrorCode(ErrorCode.AUTHORITY_ISSUER_ERROR.getCode());
-                        responseData
-                            .setErrorMessage(ErrorCode.AUTHORITY_ISSUER_ERROR.getCodeDesc());
-                    }
-                    return responseData;
-                }
-            } else {
-                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_OPCODE_MISMATCH);
-            }
+        Integer eventOpcode = event.operation.getValue().intValue();
+        if (eventOpcode.equals(opcode)) {
+            Integer eventRetCode = event.retCode.getValue().intValue();
+            return ErrorCode.getTypeByErrorCode(eventRetCode);
         } else {
-            return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ADDRESS_MISMATCH);
+            return ErrorCode.AUTHORITY_ISSUER_OPCODE_MISMATCH;
         }
+
     }
 
     private boolean isValidAuthorityIssuerName(String name) {
@@ -433,7 +430,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     }
 
     private String[] loadNameToStringAttributes(String name) {
-        String[] nameArray = new String[16];
+        String[] nameArray = new String[WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH];
         nameArray[0] = name;
         return nameArray;
     }

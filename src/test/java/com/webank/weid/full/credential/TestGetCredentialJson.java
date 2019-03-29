@@ -26,19 +26,33 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.webank.weid.constant.CredentialConstant;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.protocol.base.Credential;
 import com.webank.weid.protocol.response.ResponseData;
 
-public class TestGetCredentialHash extends TestBaseServcie {
+/**
+ * Testing getCredentialJson method.
+ *
+ * @author chaoxinhu
+ */
+public class TestGetCredentialJson extends TestBaseServcie {
 
     @Test
-    public void testGetCredentialHashCase1() {
+    public void testGetCredentialJsonCase1() {
         Credential credential = buildCredential();
-        ResponseData<String> response1 = credentialService.getCredentialHash(credential);
+        ResponseData<String> response1 = credentialService.getCredentialJson(credential);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response1.getErrorCode().intValue());
         Assert.assertNotNull(response1.getResult());
+        Assert.assertTrue(
+            response1
+                .getResult()
+                .contains(CredentialConstant.CREDENTIAL_CONTEXT_PORTABLE_JSON_FIELD));
+        Assert.assertTrue(
+            response1
+                .getResult()
+                .contains(CredentialConstant.DEFAULT_CREDENTIAL_CONTEXT));
 
         credential = buildCredential();
         credential.setIssuer("xxxxxxxxx");
@@ -47,18 +61,25 @@ public class TestGetCredentialHash extends TestBaseServcie {
         Assert.assertEquals(StringUtils.EMPTY, response1.getResult());
     }
 
+    @Test
+    public void testGetCredentialJsonCase2() {
+        ResponseData<String> response1 = credentialService.getCredentialJson(null);
+        Assert.assertNotEquals(ErrorCode.SUCCESS.getCode(), response1.getErrorCode().intValue());
+        Assert.assertEquals(StringUtils.EMPTY, response1.getResult());
+    }
+
     private Credential buildCredential() {
         Credential credential = new Credential();
         HashMap<String, Object> claim = new HashMap<>();
-        claim.put("xxxxxxxxxxxxxx", "xxxxxxxxxxxxxx");
+        claim.put("xxxxxxxxxxxxx", "xxxxxxxxxxxxx");
         credential.setClaim(claim);
-        credential.setContext("v1");
-        credential.setCptId(Integer.valueOf(1001));
-        credential.setExpirationDate(System.currentTimeMillis() + 1000L);
+        credential.setContext(CredentialConstant.DEFAULT_CREDENTIAL_CONTEXT);
+        credential.setCptId(Integer.valueOf(1002));
+        credential.setExpirationDate(System.currentTimeMillis() + 10000L);
         credential.setId(UUID.randomUUID().toString());
-        credential.setIssuer("did:weid:0x0000000000000000");
+        credential.setIssuer("did:weid:0x0000000000000001");
         credential.setIssuranceDate(System.currentTimeMillis());
-        credential.setSignature("xxxxxxxxxxx");
+        credential.setSignature("xxxxxxxxxxxx");
         return credential;
     }
 }

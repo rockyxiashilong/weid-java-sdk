@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import mockit.Mock;
 import mockit.MockUp;
+import org.apache.commons.lang3.StringUtils;
 import org.bcos.web3j.abi.datatypes.Address;
 import org.bcos.web3j.abi.datatypes.StaticArray;
 import org.bcos.web3j.abi.datatypes.generated.Bytes32;
@@ -38,7 +39,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.webank.weid.common.BeanUtil;
+import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.JsonSchemaConstant;
@@ -66,10 +67,10 @@ public class TestRegisterCpt extends TestBaseServcie {
     private static CreateWeIdDataResult createWeId = null;
 
     @Override
-    public void testInit() {
+    public synchronized void testInit() {
 
         super.testInit();
-        if (null == createWeId) {
+        if (createWeId == null) {
             createWeId = super.createWeId();
             super.registerAuthorityIssuer(createWeId);
         }
@@ -84,8 +85,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         CptMapArgs registerCptArgs = TestBaseUtil.buildCptArgs(createWeId);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(registerCptArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -99,8 +99,7 @@ public class TestRegisterCpt extends TestBaseServcie {
 
         CptMapArgs cptMapArgs = null;
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
@@ -116,8 +115,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.setCptJsonSchema(null);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.CPT_JSON_SCHEMA_NULL.getCode(),
             response.getErrorCode().intValue());
@@ -147,8 +145,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         };
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         mockTest.tearDown();
 
@@ -174,8 +171,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.setCptJsonSchema(cptJsonSchema);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.CPT_JSON_SCHEMA_INVALID.getCode(),
             response.getErrorCode().intValue());
@@ -192,8 +188,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().setWeId(null);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_INVALID.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
@@ -209,8 +204,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().setWeId("di:weid:0xaaaaaaaaaaaaaaaa");
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_INVALID.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
@@ -226,8 +220,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().setWeId("did:weid:0xaaaaaaaaaaaaaaaa");
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
             response.getErrorCode().intValue());
@@ -243,15 +236,13 @@ public class TestRegisterCpt extends TestBaseServcie {
         CptMapArgs cptMapArgs = TestBaseUtil.buildCptArgs(createWeId);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
 
         response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt again", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -267,8 +258,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().setWeIdPrivateKey(null);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_INVALID.getCode(),
             response.getErrorCode().intValue());
@@ -285,8 +275,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().getWeIdPrivateKey().setPrivateKey(null);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_INVALID.getCode(),
             response.getErrorCode().intValue());
@@ -303,8 +292,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().getWeIdPrivateKey().setPrivateKey("1231325456468789");
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
             response.getErrorCode().intValue());
@@ -323,8 +311,7 @@ public class TestRegisterCpt extends TestBaseServcie {
             .setPrivateKey(TestBaseUtil.createEcKeyPair().getPrivateKey());
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
             response.getErrorCode().intValue());
@@ -341,8 +328,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().getWeIdPrivateKey().setPrivateKey(privateKey);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
             response.getErrorCode().intValue());
@@ -359,8 +345,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.getWeIdAuthentication().getWeIdPrivateKey().setPrivateKey("xxxxxxxxxx");
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
             response.getErrorCode().intValue());
@@ -384,8 +369,7 @@ public class TestRegisterCpt extends TestBaseServcie {
             .setPrivateKey(passwordKey.getPrivateKey());
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.CPT_PUBLISHER_NOT_EXIST.getCode(),
             response.getErrorCode().intValue());
@@ -403,6 +387,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         MockUp<Future<?>> mockFuture = mockInterruptedFuture();
 
         ResponseData<CptBaseInfo> response = registerCptForMock(cptMapArgs, mockFuture);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
             response.getErrorCode().intValue());
@@ -420,6 +405,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         MockUp<Future<?>> mockFuture = mockTimeoutFuture();
 
         ResponseData<CptBaseInfo> response = registerCptForMock(cptMapArgs, mockFuture);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
             response.getErrorCode().intValue());
@@ -445,9 +431,6 @@ public class TestRegisterCpt extends TestBaseServcie {
         };
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
-
         mockTest.tearDown();
         mockFuture.tearDown();
         return response;
@@ -470,8 +453,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         };
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         mockTest.tearDown();
 
@@ -490,8 +472,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         CptStringArgs cptStringArgs =
             TestBaseUtil.buildCptStringArgs(createWeId, false);
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptStringArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -505,8 +486,7 @@ public class TestRegisterCpt extends TestBaseServcie {
 
         CptStringArgs cptStringArgs = null;
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptStringArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
@@ -522,8 +502,7 @@ public class TestRegisterCpt extends TestBaseServcie {
             TestBaseUtil.buildCptStringArgs(createWeId, false);
         cptStringArgs.setCptJsonSchema("xxxxx");
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptStringArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.UNKNOW_ERROR.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
@@ -538,8 +517,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         CptStringArgs cptStringArgs =
             TestBaseUtil.buildCptStringArgs(createWeId, true);
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptStringArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -555,8 +533,7 @@ public class TestRegisterCpt extends TestBaseServcie {
         cptMapArgs.setWeIdAuthentication(null);
 
         ResponseData<CptBaseInfo> response = cptService.registerCpt(cptMapArgs);
-        logger.info("registerCpt result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "registerCpt", response);
 
         Assert.assertEquals(
             ErrorCode.WEID_AUTHORITY_INVALID.getCode(),
@@ -564,4 +541,27 @@ public class TestRegisterCpt extends TestBaseServcie {
         Assert.assertNull(response.getResult());
     }
 
+    /**
+     * case: call transactionhex method - arbitrary.
+     */
+    @Test
+    public void testRegisterCptCase28() {
+        String hex = StringUtils.EMPTY;
+        ResponseData<String> response = cptService.registerCpt(hex);
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(),
+            response.getErrorCode().intValue());
+        Assert.assertTrue(StringUtils.isEmpty(response.getResult()));
+    }
+
+    /**
+     * case: call transactionhex method - arbitrary.
+     */
+    @Test
+    public void testRegisterCptCase29() {
+        String hex = "11111";
+        ResponseData<String> response = cptService.registerCpt(hex);
+        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
+            response.getErrorCode().intValue());
+        Assert.assertTrue(StringUtils.isEmpty(response.getResult()));
+    }
 }

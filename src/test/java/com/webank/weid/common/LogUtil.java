@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -19,36 +19,35 @@
 
 package com.webank.weid.common;
 
+import org.slf4j.Logger;
+
 /**
- * public and private key object class.
+ * logging tool class.
  * @author v_wbgyang
  *
  */
-public class PasswordKey {
+public class LogUtil {
 
     /**
-     * the key of privateKey.
+     * log record.
+     * @param message log description
+     * @param obj objects to be recorded
      */
-    private String privateKey;
-
+    public static void info(Logger logger, String message, Object obj) {
+        logger.info(
+            "{}-{} result:\r\n{}",
+            stackTrace().getMethodName(),
+            message,
+            BeanUtil.objToString(obj)
+        );
+    }
+    
     /**
-     * the key of publicKey.
+     * get stack information for log records.
+     * @return StackTraceElement for currentThread.
      */
-    private String publicKey;
-
-    public String getPrivateKey() {
-        return privateKey;
+    private static StackTraceElement stackTrace() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        return stackTrace[3];
     }
-
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
-    }
-
-    public String getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
-    } 
 }

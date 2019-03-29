@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -91,12 +91,26 @@ public class DateUtils {
     /**
      * Conver date to time stamp.
      *
-     * @param time the time
-     * @return the long
+     * @param time the time in Date
+     * @return the long timestamp
      * @throws ParseException the parse exception
      */
     public static long converDateToTimeStamp(String time) throws ParseException {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = simpleDateFormat.parse(time);
+        long ts = date.getTime();
+        return ts;
+    }
+
+    /**
+     * Conver utc date to time stamp.
+     *
+     * @param time the time in UTC
+     * @return the long timestamp
+     * @throws ParseException the parse exception
+     */
+    public static long convertUtcDateToTimeStamp(String time) throws ParseException {
+        DateFormat simpleDateFormat = getDefaultDateFormat();
         Date date = simpleDateFormat.parse(time);
         long ts = date.getTime();
         return ts;
@@ -120,6 +134,18 @@ public class DateUtils {
     }
 
     /**
+     * Check the timestamp date to UTC date string.
+     *
+     * @param timestamp the date string
+     * @return UTC formatted date string
+     */
+    public static String convertTimestampToUtc(Long timestamp) {
+        DateFormat df = getDefaultDateFormat();
+        df.setLenient(false);
+        return df.format(new Date(timestamp));
+    }
+
+    /**
      * Get current timestamp in Int256 type.
      *
      * @return the current time stamp int 256
@@ -138,7 +164,7 @@ public class DateUtils {
     }
 
     /**
-     *  Get current timestamp in String type.
+     * Get current timestamp in String type.
      *
      * @return the current time stamp long
      */

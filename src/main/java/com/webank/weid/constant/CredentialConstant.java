@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -17,30 +17,25 @@
  *       along with weidentity-java-sdk.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.webank.weid.demo;
-
-import java.math.BigInteger;
-
-import org.bcos.contract.tools.ToolConf;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+package com.webank.weid.constant;
 
 /**
- * Base class for demo.
- * 
- * @author v_wbgyang
+ * The Class CredentialConstant.
+ *
+ * @author chaoxinhu
  */
-public abstract class DemoBase {
 
-    public final static String PRIVKEY;
-    protected static ApplicationContext context;
+public final class CredentialConstant {
 
-    static {
-        context = new ClassPathXmlApplicationContext(new String[] {
-            "classpath:SpringApplicationContext-test.xml", 
-            "classpath:applicationContext.xml"});
+    /**
+     * The Constant default Credential Context.
+     */
+    public static final String DEFAULT_CREDENTIAL_CONTEXT =
+        "https://www.w3.org/2018/credentials/v1";
 
-        ToolConf toolConf = context.getBean(ToolConf.class);
-        PRIVKEY = new BigInteger(toolConf.getPrivKey(), 16).toString();
-    }
+    /**
+     * The Constant default Credential Context field name in Credential Json String.
+     */
+    public static final String CREDENTIAL_CONTEXT_PORTABLE_JSON_FIELD = "@context";
+
 }

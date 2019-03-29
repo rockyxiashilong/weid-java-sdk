@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -19,13 +19,9 @@
 
 package com.webank.weid.util;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 
+import com.lambdaworks.codec.Base64;
 import org.bcos.web3j.crypto.ECKeyPair;
 import org.bcos.web3j.crypto.Sign;
 import org.junit.Assert;
@@ -35,9 +31,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Test SignatureUtils.
- * 
- * @author v_wbjnzhang
  *
+ * @author v_wbjnzhang
  */
 public class TestSignatureUtils {
 
@@ -45,34 +40,36 @@ public class TestSignatureUtils {
 
     @Test
     public void testSignatureUtils()
-        throws InvalidAlgorithmParameterException, 
-        NoSuchAlgorithmException,
-        NoSuchProviderException, 
-        SignatureException,
-        UnsupportedEncodingException {
+        throws Exception {
 
         ECKeyPair keyPair = SignatureUtils.createKeyPair();
         String str = "hello world...........................yes";
         Sign.SignatureData sigData = SignatureUtils.signMessage(str, keyPair);
         BigInteger publicKey = SignatureUtils.signatureToPublicKey(str, sigData);
-        logger.info("publicKey " + publicKey);
+        logger.info("publicKey:{} ", publicKey);
 
         String privateKey =
             "58317564669857453586637110679746575832914889677346283755719850144028639639651";
         Sign.SignatureData sigData2 = SignatureUtils.signMessage(str, privateKey);
         publicKey = SignatureUtils.signatureToPublicKey(str, sigData2);
-        logger.info("publicKey " + publicKey);
+        logger.info("publicKey:{} ", publicKey);
 
         boolean result = SignatureUtils.verifySignature(str, sigData2, publicKey);
         Assert.assertTrue(result);
 
         publicKey = SignatureUtils.publicKeyFromPrivate(new BigInteger(privateKey));
-        logger.info("publicKey " + publicKey);
+        logger.info("publicKey:{} ", publicKey);
 
         keyPair = SignatureUtils.createKeyPairFromPrivate(new BigInteger(privateKey));
+        logger.info("publicKey:{} ", keyPair.getPublicKey());
+        logger.info("privateKey:{}", keyPair.getPrivateKey());
 
         byte[] serialized = SignatureUtils.simpleSignatureSerialization(sigData);
         Sign.SignatureData newSigData = SignatureUtils.simpleSignatureDeserialization(serialized);
         logger.info(newSigData.toString());
+
+        Sign.SignatureData signatureData = SignatureUtils
+            .convertBase64StringToSignatureData(new String(Base64.encode(serialized)));
+        logger.info(signatureData.toString());
     }
 }

@@ -19,6 +19,7 @@
 
 package com.webank.weid.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,13 +32,14 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.bcos.web3j.abi.datatypes.generated.Bytes32;
 
+import com.webank.weid.constant.CredentialConstant;
 import com.webank.weid.constant.CredentialFieldDisclosureValue;
 import com.webank.weid.constant.ErrorCode;
+import com.webank.weid.constant.ParamKeyConstant;
 import com.webank.weid.constant.WeIdConstant;
 import com.webank.weid.protocol.base.Credential;
 import com.webank.weid.protocol.base.WeIdPrivateKey;
 import com.webank.weid.protocol.request.CreateCredentialArgs;
-import com.webank.weid.protocol.response.ResponseData;
 
 /**
  * The Class CredentialUtils.
@@ -47,28 +49,73 @@ import com.webank.weid.protocol.response.ResponseData;
 public final class CredentialUtils {
 
     /**
-     * Concat all fields of Credential info, without Signature. This should be invoked when
-     * calculating Credential Signature. Return null if credential format is illegal.
+     * Concat all fields of Credential info, without Signature, in Json format. This should be
+     * invoked when calculating Credential Signature. Return null if credential format is illegal.
+     * Note that: 1. Keys should be dict-ordered; 2. Claim should use standard getClaimHash() to
+     * support selective disclosure; 3. Use compact output to avoid Json format confusion.
      *
-     * @param arg target Credential object
+     * @param credential target Credential object
      * @return Hash value in String.
      */
-    public static String getCredentialFields(Credential arg, Map<String, Object> disclosures) {
-        String metaData = concatCredentialMetadata(arg);
-        if (StringUtils.isEmpty(metaData)) {
+    public static String getCredentialThumbprintWithoutSig(
+        Credential credential,
+        Map<String, Object> disclosures) {
+        try {
+            Map<String, Object> credMap = JsonUtil.objToMap(credential);
+            credMap.remove(ParamKeyConstant.CREDENTIAL_SIGNATURE);
+            String claimHash = getClaimHash(credential, disclosures);
+            credMap.put(ParamKeyConstant.CLAIM, claimHash);
+            return JsonUtil.mapToCompactJson(credMap);
+        } catch (Exception e) {
             return StringUtils.EMPTY;
         }
-        String claimHash = getClaimHash(arg, disclosures);
-        String rawData = metaData + WeIdConstant.PIPELINE + claimHash;
-        return rawData;
     }
 
-    private static String getClaimHash(Credential credential, Map<String, Object> disclosures) {
+    /**
+     * Concat all fields of Credential info, with signature. This should be invoked when calculating
+     * Credential Evidence. Return null if credential format is illegal.
+     *
+     * @param credential target Credential object
+     * @return Hash value in String.
+     */
+    public static String getCredentialThumbprint(Credential credential,
+        Map<String, Object> disclosures) {
+        try {
+            Map<String, Object> credMap = JsonUtil.objToMap(credential);
+            String claimHash = getClaimHash(credential, disclosures);
+            credMap.put(ParamKeyConstant.CLAIM, claimHash);
+            return JsonUtil.mapToCompactJson(credMap);
+        } catch (Exception e) {
+            return StringUtils.EMPTY;
+        }
+    }
+
+    /**
+     * Get the claim hash. This is irrelevant to selective disclosure.
+     *
+     * @param credential Credential
+     * @param disclosures Disclosure Map
+     * @return the unique claim hash value
+     */
+    public static String getClaimHash(Credential credential, Map<String, Object> disclosures) {
 
         Map<String, Object> claim = credential.getClaim();
-        Map<String, Object> claimHashMap = new HashMap<String, Object>(claim);
+        Map<String, Object> claimHashMap = new HashMap<>(claim);
+        Map<String, Object> disclosureMap;
 
-        for (Map.Entry<String, Object> entry : disclosures.entrySet()) {
+        if (disclosures == null) {
+            disclosureMap = new HashMap<>(claim);
+            for (Map.Entry<String, Object> entry : disclosureMap.entrySet()) {
+                disclosureMap.put(
+                    entry.getKey(),
+                    CredentialFieldDisclosureValue.DISCLOSED.getStatus()
+                );
+            }
+        } else {
+            disclosureMap = disclosures;
+        }
+
+        for (Map.Entry<String, Object> entry : disclosureMap.entrySet()) {
             if (CredentialFieldDisclosureValue.DISCLOSED.getStatus().equals(entry.getValue())) {
                 claimHashMap.put(
                     entry.getKey(),
@@ -106,59 +153,12 @@ public final class CredentialUtils {
     }
 
     /**
-     * Concat all fields of Credential info, with signature. This should be invoked when calculating
-     * Credential Evidence and currently it does not allow selective disclosure. Return null if
-     * credential format is illegal.
-     *
-     * @param arg target Credential object
-     * @return Hash value in String.
-     */
-    public static String getFullCredentialFields(Credential arg) {
-        String metaData = concatCredentialMetadata(arg);
-        if (StringUtils.isEmpty(metaData)) {
-            return StringUtils.EMPTY;
-        }
-        String rawData = metaData
-            + WeIdConstant.PIPELINE
-            + JsonUtil.objToJsonStr(arg.getClaim())
-            + WeIdConstant.PIPELINE
-            + arg.getSignature();
-        return rawData;
-    }
-
-    /**
-     * Concat metadata fields of Credential info. Return null if credential format is illegal.
-     *
-     * @param arg target Credential object
-     * @return Hash value in String.
-     */
-    public static String concatCredentialMetadata(Credential arg) {
-        if (arg == null
-            || arg.getCptId() == null
-            || arg.getIssuranceDate() == null
-            || arg.getExpirationDate() == null) {
-            return StringUtils.EMPTY;
-        }
-        return arg.getContext()
-            + WeIdConstant.PIPELINE
-            + arg.getId()
-            + WeIdConstant.PIPELINE
-            + Integer.toString(arg.getCptId())
-            + WeIdConstant.PIPELINE
-            + arg.getIssuer()
-            + WeIdConstant.PIPELINE
-            + arg.getIssuranceDate().toString()
-            + WeIdConstant.PIPELINE
-            + arg.getExpirationDate().toString();
-    }
-
-    /**
      * Get default Credential Context String.
      *
      * @return Context value in String.
      */
     public static String getDefaultCredentialContext() {
-        return WeIdConstant.DEFAULT_CERTIFICATE_CONTEXT;
+        return CredentialConstant.DEFAULT_CREDENTIAL_CONTEXT;
     }
 
     /**
@@ -188,7 +188,7 @@ public final class CredentialUtils {
      * @return Hash in byte array
      */
     public static String getCredentialHash(Credential arg) {
-        String rawData = getFullCredentialFields(arg);
+        String rawData = getCredentialThumbprint(arg, null);
         if (StringUtils.isEmpty(rawData)) {
             return StringUtils.EMPTY;
         }
@@ -206,7 +206,7 @@ public final class CredentialUtils {
             return new Bytes32(new byte[32]);
         }
         String mergedId = id.replaceAll(WeIdConstant.UUID_SEPARATOR, StringUtils.EMPTY);
-        byte[] uuidBytes = mergedId.getBytes();
+        byte[] uuidBytes = mergedId.getBytes(StandardCharsets.UTF_8);
         return DataTypetUtils.bytesArrayToBytes32(uuidBytes);
     }
 
@@ -227,27 +227,27 @@ public final class CredentialUtils {
      * @param args CreateCredentialArgs
      * @return true if yes, false otherwise
      */
-    public static ResponseData<Boolean> isCreateCredentialArgsValid(
+    public static ErrorCode isCreateCredentialArgsValid(
         CreateCredentialArgs args) {
         if (args == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
         if (args.getCptId() == null || args.getCptId().intValue() < 0) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_CPT_NOT_EXISTS);
+            return ErrorCode.CREDENTIAL_CPT_NOT_EXISTS;
         }
         if (!WeIdUtils.isWeIdValid(args.getIssuer())) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_ISSUER_INVALID);
+            return ErrorCode.CREDENTIAL_ISSUER_INVALID;
         }
         Long expirationDate = args.getExpirationDate();
         if (expirationDate == null
             || expirationDate.longValue() < 0
             || expirationDate.longValue() == 0) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_EXPIRE_DATE_ILLEGAL);
+            return ErrorCode.CREDENTIAL_EXPIRE_DATE_ILLEGAL;
         }
         if (args.getClaim() == null || args.getClaim().isEmpty()) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_CLAIM_NOT_EXISTS);
+            return ErrorCode.CREDENTIAL_CLAIM_NOT_EXISTS;
         }
-        return new ResponseData<>(true, ErrorCode.SUCCESS);
+        return ErrorCode.SUCCESS;
     }
 
     /**
@@ -256,21 +256,20 @@ public final class CredentialUtils {
      * @param args Credential
      * @return true if yes, false otherwise
      */
-    public static ResponseData<Boolean> isCredentialValid(Credential args) {
+    public static ErrorCode isCredentialValid(Credential args) {
         if (args == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
         CreateCredentialArgs createCredentialArgs = extractCredentialMetadata(args);
-        ResponseData<Boolean> metadataResponseData =
-            isCreateCredentialArgsValid(createCredentialArgs);
-        if (!metadataResponseData.getResult()) {
+        ErrorCode metadataResponseData = isCreateCredentialArgsValid(createCredentialArgs);
+        if (ErrorCode.SUCCESS.getCode() != metadataResponseData.getCode()) {
             return metadataResponseData;
         }
-        ResponseData<Boolean> contentResponseData = isCredentialContentValid(args);
-        if (!contentResponseData.getResult()) {
+        ErrorCode contentResponseData = isCredentialContentValid(args);
+        if (ErrorCode.SUCCESS.getCode() != contentResponseData.getCode()) {
             return contentResponseData;
         }
-        return new ResponseData<>(true, ErrorCode.SUCCESS);
+        return ErrorCode.SUCCESS;
     }
 
     /**
@@ -279,27 +278,27 @@ public final class CredentialUtils {
      * @param args Credential
      * @return true if yes, false otherwise
      */
-    public static ResponseData<Boolean> isCredentialContentValid(Credential args) {
+    public static ErrorCode isCredentialContentValid(Credential args) {
         String credentialId = args.getId();
         if (StringUtils.isEmpty(credentialId) || !CredentialUtils.isValidUuid(credentialId)) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_ID_NOT_EXISTS);
+            return ErrorCode.CREDENTIAL_ID_NOT_EXISTS;
         }
         String context = args.getContext();
         if (StringUtils.isEmpty(context)) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_CONTEXT_NOT_EXISTS);
+            return ErrorCode.CREDENTIAL_CONTEXT_NOT_EXISTS;
         }
         Long issuranceDate = args.getIssuranceDate();
         if (issuranceDate == null) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_CREATE_DATE_ILLEGAL);
+            return ErrorCode.CREDENTIAL_CREATE_DATE_ILLEGAL;
         }
         if (issuranceDate.longValue() > args.getExpirationDate().longValue()) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_EXPIRED);
+            return ErrorCode.CREDENTIAL_EXPIRED;
         }
         String signature = args.getSignature();
         if (StringUtils.isEmpty(signature) || !SignatureUtils.isValidBase64String(signature)) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_SIGNATURE_BROKEN);
+            return ErrorCode.CREDENTIAL_SIGNATURE_BROKEN;
         }
-        return new ResponseData<>(true, ErrorCode.SUCCESS);
+        return ErrorCode.SUCCESS;
     }
 
     /**
@@ -309,14 +308,15 @@ public final class CredentialUtils {
      * @param weIdPrivateKey the signer WeID's private key
      * @return evidence address. Return empty string if failed due to any reason.
      */
-    public static ResponseData<Boolean> isCreateEvidenceArgsValid(Credential credential,
+    public static ErrorCode isCreateEvidenceArgsValid(
+        Credential credential,
         WeIdPrivateKey weIdPrivateKey) {
         if (credential == null) {
-            return new ResponseData<>(false, ErrorCode.ILLEGAL_INPUT);
+            return ErrorCode.ILLEGAL_INPUT;
         }
         if (!WeIdUtils.isPrivateKeyValid(weIdPrivateKey)) {
-            return new ResponseData<>(false, ErrorCode.CREDENTIAL_PRIVATE_KEY_NOT_EXISTS);
+            return ErrorCode.CREDENTIAL_PRIVATE_KEY_NOT_EXISTS;
         }
-        return new ResponseData<>(true, ErrorCode.SUCCESS);
+        return ErrorCode.SUCCESS;
     }
 }

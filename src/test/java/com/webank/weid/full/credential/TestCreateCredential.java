@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.webank.weid.common.BeanUtil;
+import com.webank.weid.common.LogUtil;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.full.TestBaseUtil;
@@ -45,10 +45,10 @@ public class TestCreateCredential extends TestBaseServcie {
     private static final Logger logger = LoggerFactory.getLogger(TestCreateCredential.class);
 
     @Override
-    public void testInit() {
+    public synchronized void testInit() {
 
         super.testInit();
-        if (null == cptBaseInfo) {
+        if (cptBaseInfo == null) {
             cptBaseInfo = super.registerCpt(createWeIdResultWithSetAttr);
         }
     }
@@ -64,8 +64,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -76,12 +75,12 @@ public class TestCreateCredential extends TestBaseServcie {
      */
     @Test
     public void testCreateCredentialCase2() {
+        CreateCredentialArgs createCredentialArgs = null;
+        ResponseData<CredentialWrapper> response = credentialService
+            .createCredential(createCredentialArgs);
+        LogUtil.info(logger, "createCredential", response);
 
-        ResponseData<CredentialWrapper> response = credentialService.createCredential(null);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
         Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
-
         Assert.assertNull(response.getResult());
     }
 
@@ -97,8 +96,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
@@ -117,8 +115,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
@@ -136,8 +133,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
@@ -157,8 +153,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -176,8 +171,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_INVALID.getCode(),
             response.getErrorCode().intValue());
@@ -196,8 +190,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_INVALID.getCode(),
             response.getErrorCode().intValue());
@@ -216,8 +209,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -235,8 +227,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_EXPIRE_DATE_ILLEGAL.getCode(),
             response.getErrorCode().intValue());
@@ -255,8 +246,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
@@ -274,8 +264,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
@@ -296,8 +285,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
             response.getErrorCode().intValue());
@@ -315,8 +303,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_ERROR.getCode(),
             response.getErrorCode().intValue());
@@ -335,8 +322,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_PRIVATE_KEY_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
@@ -355,8 +341,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.CREDENTIAL_ERROR.getCode(),
             response.getErrorCode().intValue());
@@ -375,8 +360,7 @@ public class TestCreateCredential extends TestBaseServcie {
 
         ResponseData<CredentialWrapper> response =
             credentialService.createCredential(createCredentialArgs);
-        logger.info("createCredential result:");
-        BeanUtil.print(response);
+        LogUtil.info(logger, "createCredential", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());

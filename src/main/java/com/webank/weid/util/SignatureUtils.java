@@ -19,8 +19,8 @@
 
 package com.webank.weid.util;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -29,17 +29,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bcos.web3j.abi.datatypes.generated.Bytes32;
+import org.bcos.web3j.abi.datatypes.generated.Uint8;
 import org.bcos.web3j.crypto.ECKeyPair;
 import org.bcos.web3j.crypto.Keys;
 import org.bcos.web3j.crypto.Sign;
+import org.bcos.web3j.crypto.Sign.SignatureData;
 import org.bouncycastle.util.encoders.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.webank.weid.constant.ErrorCode;
-import com.webank.weid.constant.WeIdConstant;
 import com.webank.weid.protocol.base.AuthenticationProperty;
 import com.webank.weid.protocol.base.PublicKeyProperty;
 import com.webank.weid.protocol.base.WeIdDocument;
 import com.webank.weid.protocol.response.ResponseData;
+import com.webank.weid.protocol.response.RsvSignature;
 
 /**
  * The Signature related Utils class. Based on ECDSA Asymmetric Encryption + SHA256 Hash Algorithm.
@@ -56,6 +61,8 @@ import com.webank.weid.protocol.response.ResponseData;
  * @author chaoxinhu 2019.1
  */
 public class SignatureUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(SignatureUtils.class);
 
     /**
      * Generate a new Key-pair.
@@ -78,11 +85,9 @@ public class SignatureUtils {
      * @param message the message
      * @param keyPair the key pair
      * @return SignatureData
-     * @throws UnsupportedEncodingException If the named charset is not supported.
      */
-    public static Sign.SignatureData signMessage(String message, ECKeyPair keyPair)
-        throws UnsupportedEncodingException {
-        return Sign.signMessage(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)), keyPair);
+    public static Sign.SignatureData signMessage(String message, ECKeyPair keyPair) {
+        return Sign.signMessage(HashUtils.sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
     }
 
     /**
@@ -92,16 +97,14 @@ public class SignatureUtils {
      * @param message the message
      * @param privateKeyString the private key string
      * @return SignatureData
-     * @throws UnsupportedEncodingException If the named charset is not supported.
      */
     public static Sign.SignatureData signMessage(
         String message,
-        String privateKeyString)
-        throws UnsupportedEncodingException {
+        String privateKeyString) {
 
         BigInteger privateKey = new BigInteger(privateKeyString);
         ECKeyPair keyPair = new ECKeyPair(privateKey, publicKeyFromPrivate(privateKey));
-        return Sign.signMessage(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)), keyPair);
+        return Sign.signMessage(HashUtils.sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
     }
 
     /**
@@ -111,14 +114,13 @@ public class SignatureUtils {
      * @param signatureData the signature data
      * @return publicKey
      * @throws SignatureException Signature is the exception.
-     * @throws UnsupportedEncodingException If the named charset is not supported.
      */
     public static BigInteger signatureToPublicKey(
         String message,
         Sign.SignatureData signatureData)
-        throws SignatureException, UnsupportedEncodingException {
+        throws SignatureException {
 
-        return Sign.signedMessageToKey(HashUtils.sha3(message.getBytes(WeIdConstant.UTF_8)),
+        return Sign.signedMessageToKey(HashUtils.sha3(message.getBytes(StandardCharsets.UTF_8)),
             signatureData);
     }
 
@@ -130,13 +132,12 @@ public class SignatureUtils {
      * @param publicKey This must be in BigInteger. Caller should convert it to BigInt.
      * @return true if yes, false otherwise
      * @throws SignatureException Signature is the exception.
-     * @throws UnsupportedEncodingException If the named charset is not supported.
      */
     public static boolean verifySignature(
         String message,
         Sign.SignatureData signatureData,
         BigInteger publicKey)
-        throws SignatureException, UnsupportedEncodingException {
+        throws SignatureException {
 
         BigInteger extractedPublicKey = signatureToPublicKey(message, signatureData);
         return extractedPublicKey.equals(publicKey);
@@ -283,9 +284,40 @@ public class SignatureUtils {
             if (!result) {
                 return new ResponseData<>(false, ErrorCode.CREDENTIAL_ISSUER_MISMATCH);
             }
-        } catch (Exception e) {
-            new ResponseData<>(false, ErrorCode.CREDENTIAL_EXCEPTION_VERIFYSIGNATURE);
+        } catch (SignatureException e) {
+            logger.error("some exceptions occurred in signature verification", e);
+            return new ResponseData<>(false, ErrorCode.CREDENTIAL_EXCEPTION_VERIFYSIGNATURE);
         }
         return new ResponseData<>(true, ErrorCode.SUCCESS);
+    }
+
+    /**
+     * Convert SignatureData to blockchain-ready RSV format.
+     *
+     * @param signatureData the signature data
+     * @return rsvSignature the rsv signature structure
+     */
+    public static RsvSignature convertSignatureDataToRsv(
+        SignatureData signatureData) {
+        Uint8 v = DataTypetUtils.intToUnt8(Integer.valueOf(signatureData.getV()));
+        Bytes32 r = DataTypetUtils.bytesArrayToBytes32(signatureData.getR());
+        Bytes32 s = DataTypetUtils.bytesArrayToBytes32(signatureData.getS());
+        RsvSignature rsvSignature = new RsvSignature();
+        rsvSignature.setV(v);
+        rsvSignature.setR(r);
+        rsvSignature.setS(s);
+        return rsvSignature;
+    }
+
+    /**
+     * Convert an off-chain Base64 signature String to signatureData format.
+     *
+     * @param base64Signature the signature string in Base64
+     * @return signatureData structure
+     */
+    public static SignatureData convertBase64StringToSignatureData(String base64Signature) {
+        return simpleSignatureDeserialization(
+            base64Decode(base64Signature.getBytes(StandardCharsets.UTF_8))
+        );
     }
 }

@@ -41,12 +41,12 @@ import com.webank.weid.protocol.response.ResponseData;
  */
 public class TestGetEvidence extends TestBaseServcie {
 
-    private static final Logger logger = LoggerFactory.getLogger(TestCreateEvidence.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestGetEvidence.class);
     private static Credential evidenceCredential = null;
     private static String evidenceAddress;
 
     @Override
-    public void testInit() {
+    public synchronized void testInit() {
         super.testInit();
         if (evidenceCredential == null) {
             Credential credential = super.createCredential(createCredentialArgs).getCredential();
@@ -82,8 +82,8 @@ public class TestGetEvidence extends TestBaseServcie {
      */
     @Test
     public void testGetEvidenceCase2() {
-        String evidenceAddress = null;
-        ResponseData<EvidenceInfo> responseData = evidenceService.getEvidence(evidenceAddress);
+        
+        ResponseData<EvidenceInfo> responseData = evidenceService.getEvidence(null);
         logger.info("testGetEvidenceCase2 result :" + responseData);
         Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(),
             responseData.getErrorCode().intValue());

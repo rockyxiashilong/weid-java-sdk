@@ -1,5 +1,5 @@
 /*
- *       Copyright© (2018) WeBank Co., Ltd.
+ *       Copyright© (2018-2019) WeBank Co., Ltd.
  *
  *       This file is part of weidentity-java-sdk.
  *
@@ -71,7 +71,7 @@ public abstract class BaseService {
         ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         web3j = Web3j.build(channelEthereumService);
-        if (null == web3j) {
+        if (web3j == null) {
             logger.error("[BaseService] web3j init failed. ");
             return false;
         }
@@ -88,7 +88,7 @@ public abstract class BaseService {
         logger.info("begin init credentials");
         credentials = GenCredential.create(toolConf.getPrivKey());
 
-        if (null == credentials) {
+        if (credentials == null) {
             logger.error("[BaseService] credentials init failed. ");
             return false;
         }
@@ -100,11 +100,9 @@ public abstract class BaseService {
      *
      * @return the web3j
      */
-    protected static Web3j getWeb3j() {
-        if (null == web3j) {
-            if (!initWeb3j()) {
-                throw new InitWeb3jException();
-            }
+    public static Web3j getWeb3j() {
+        if (web3j == null && !initWeb3j()) {
+            throw new InitWeb3jException();
         }
         return web3j;
     }
@@ -184,7 +182,7 @@ public abstract class BaseService {
         Object contract = null;
         try {
             // load contract
-            if (null == credentials) {
+            if (credentials == null) {
                 initCredentials();
             }
             contract = loadContract(contractAddress, credentials, cls);
