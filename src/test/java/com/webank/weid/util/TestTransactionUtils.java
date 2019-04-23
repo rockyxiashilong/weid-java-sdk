@@ -29,10 +29,12 @@ import org.bcos.web3j.abi.datatypes.StaticArray;
 import org.bcos.web3j.abi.datatypes.Type;
 import org.bcos.web3j.abi.datatypes.generated.Bytes32;
 import org.bcos.web3j.abi.datatypes.generated.Int256;
+import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.webank.weid.protocol.response.ResponseData;
+import com.webank.weid.protocol.response.TransactionInfo;
 
 /**
  * test DateUtils.
@@ -88,7 +90,14 @@ public class TestTransactionUtils {
         Assert.assertNull(weidList.getResult());
         Assert.assertNull(cptList.getResult());
         Assert.assertNull(auList.getResult());
-
+        TransactionReceipt receipt = new TransactionReceipt();
+        receipt.setBlockNumber("1010");
+        receipt.setTransactionHash("bcbd");
+        receipt.setTransactionIndex("0");
+        TransactionInfo info = new TransactionInfo(receipt);
+        Assert.assertNotNull(info);
+        Assert.assertNull(new TransactionInfo(null).getBlockNumber());
+        Assert.assertNull(TransactionUtils.getTransaction(null));
     }
 
     @Test
