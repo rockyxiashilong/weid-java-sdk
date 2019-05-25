@@ -1,4 +1,17 @@
-v1.1.1 (2019-03-29)
+### v1.2.0.rc-3 (2019-05-25)
+
+- Features:
+1. Add AMOP function to support communication between organizations by blockchain nodes.
+2. Modify CreateWeId method to support automatically add public key to user's weidentity did document. 
+3. Add presentation support.
+4. Support of generating QR code.
+5. Support creating credential by POJO.
+
+- Bugfixes:
+1. Fixed issue of error result of parsing two event log in one trasaction.
+
+
+### v1.1.1 (2019-03-29)
 
 - Features:
 1. Add adaption of new changes in RestAPI service.
