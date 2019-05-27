@@ -331,11 +331,6 @@ public class CptServiceImpl extends BaseService implements CptService {
 
             CptMapArgs cptMapArgs = new CptMapArgs();
             cptMapArgs.setWeIdAuthentication(args.getWeIdAuthentication());
-            // cptMapArgs.setCptJsonSchema(
-            //     (Map<String, Object>) JsonUtil.jsonStrToObj(
-            //         new HashMap<String, Object>(),
-            //         args.getCptJsonSchema())
-            // );
             cptMapArgs.setCptJsonSchema(
                 DataToolUtils.deserialize(args.getCptJsonSchema(), HashMap.class));
             return this.updateCpt(cptMapArgs, cptId);
@@ -388,7 +383,8 @@ public class CptServiceImpl extends BaseService implements CptService {
             return TransactionUtils.getResultByResolveEvent(
                 event.get(0).retCode,
                 event.get(0).cptId,
-                event.get(0).cptVersion
+                event.get(0).cptVersion,
+                transactionReceipt
             );
         } catch (InterruptedException | ExecutionException e) {
             logger.error(

@@ -35,6 +35,7 @@ import com.webank.weid.contract.WeIdContract;
 import com.webank.weid.contract.WeIdContract.WeIdAttributeChangedEventResponse;
 import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.response.ResponseData;
+import com.webank.weid.protocol.response.TransactionInfo;
 import com.webank.weid.rpc.RawTransactionService;
 import com.webank.weid.service.BaseService;
 import com.webank.weid.util.DataToolUtils;
@@ -66,8 +67,9 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
                 .sendTransaction(getWeb3j(), transactionHex);
             List<WeIdAttributeChangedEventResponse> response =
                 WeIdContract.getWeIdAttributeChangedEvents(transactionReceipt);
+            TransactionInfo info = new TransactionInfo(transactionReceipt);
             if (!CollectionUtils.isEmpty(response)) {
-                return new ResponseData<>(Boolean.TRUE.toString(), ErrorCode.SUCCESS);
+                return new ResponseData<>(Boolean.TRUE.toString(), ErrorCode.SUCCESS, info);
             }
         } catch (Exception e) {
             logger.error("[createWeId] create failed due to unknown transaction error. ", e);
@@ -96,10 +98,11 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             List<AuthorityIssuerRetLogEventResponse> eventList =
                 AuthorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
+            TransactionInfo info = new TransactionInfo(transactionReceipt);
             ErrorCode errorCode = TransactionUtils.verifyAuthorityIssuerRelatedEvent(event,
                 WeIdConstant.ADD_AUTHORITY_ISSUER_OPCODE);
             Boolean result = errorCode.getCode() == ErrorCode.SUCCESS.getCode();
-            return new ResponseData<>(result.toString(), errorCode);
+            return new ResponseData<>(result.toString(), errorCode, info);
         } catch (Exception e) {
             logger.error("[registerAuthorityIssuer] register failed due to transaction error.", e);
         }
@@ -123,9 +126,10 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
                 .sendTransaction(getWeb3j(), transactionHex);
             CptBaseInfo cptBaseInfo = TransactionUtils.resolveRegisterCptEvents(transactionReceipt)
                 .getResult();
+            TransactionInfo info = new TransactionInfo(transactionReceipt);
             if (cptBaseInfo != null) {
                 return new ResponseData<>(DataToolUtils.objToJsonStrWithNoPretty(cptBaseInfo),
-                    ErrorCode.SUCCESS);
+                    ErrorCode.SUCCESS, info);
             }
         } catch (Exception e) {
             logger.error("[registerCpt] register failed due to unknown transaction error. ", e);

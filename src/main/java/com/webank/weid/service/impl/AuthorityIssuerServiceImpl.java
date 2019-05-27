@@ -54,6 +54,7 @@ import com.webank.weid.protocol.base.WeIdAuthentication;
 import com.webank.weid.protocol.request.RegisterAuthorityIssuerArgs;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.ResponseData;
+import com.webank.weid.protocol.response.TransactionInfo;
 import com.webank.weid.rpc.AuthorityIssuerService;
 import com.webank.weid.rpc.WeIdService;
 import com.webank.weid.service.BaseService;
@@ -159,8 +160,9 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
             ErrorCode errorCode = TransactionUtils.verifyAuthorityIssuerRelatedEvent(event,
                 WeIdConstant.ADD_AUTHORITY_ISSUER_OPCODE);
+            TransactionInfo info = new TransactionInfo(receipt);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode);
+                errorCode, info);
         } catch (TimeoutException e) {
             logger.error("register authority issuer failed due to system timeout. ", e);
             return new ResponseData<>(false, ErrorCode.TRANSACTION_TIMEOUT);
@@ -198,6 +200,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             List<AuthorityIssuerRetLogEventResponse> eventList =
                 AuthorityIssuerController.getAuthorityIssuerRetLogEvents(receipt);
 
+            TransactionInfo info = new TransactionInfo(receipt);
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
             if (event != null) {
                 ErrorCode errorCode = TransactionUtils.verifyAuthorityIssuerRelatedEvent(
@@ -205,13 +208,13 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                     WeIdConstant.REMOVE_AUTHORITY_ISSUER_OPCODE
                 );
                 if (ErrorCode.SUCCESS.getCode() != errorCode.getCode()) {
-                    return new ResponseData<>(false, errorCode);
+                    return new ResponseData<>(false, errorCode, info);
                 } else {
-                    return new ResponseData<>(true, errorCode);
+                    return new ResponseData<>(true, errorCode, info);
                 }
             } else {
                 logger.error("remove authority issuer failed, transcation event decoding failure.");
-                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
+                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR, info);
             }
         } catch (TimeoutException e) {
             logger.error("remove authority issuer failed due to system timeout. ", e);
@@ -377,11 +380,12 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                 .registerIssuerType(DataToolUtils.stringToBytes32(issuerType));
             TransactionReceipt receipt =
                 future.get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
+            TransactionInfo info = new TransactionInfo(receipt);
             // pass-in empty address
             String emptyAddress = new Address(BigInteger.ZERO).toString();
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, true, emptyAddress);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode);
+                errorCode, info);
         } catch (TimeoutException e) {
             logger.error("register issuer type failed due to system timeout. ", e);
             return new ResponseData<>(false, ErrorCode.TRANSACTION_TIMEOUT);
@@ -420,9 +424,10 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                 .addIssuer(DataToolUtils.stringToBytes32(issuerType), new Address(issuerAddress));
             TransactionReceipt receipt =
                 future.get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
+            TransactionInfo info = new TransactionInfo(receipt);
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, true, issuerAddress);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode);
+                errorCode, info);
         } catch (TimeoutException e) {
             logger.error("add issuer into type failed due to system timeout. ", e);
             return new ResponseData<>(false, ErrorCode.TRANSACTION_TIMEOUT);
@@ -461,9 +466,10 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                     new Address(issuerAddress));
             TransactionReceipt receipt =
                 future.get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
+            TransactionInfo info = new TransactionInfo(receipt);
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, false, issuerAddress);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode);
+                errorCode, info);
         } catch (TimeoutException e) {
             logger.error("remove issuer from type failed due to system timeout. ", e);
             return new ResponseData<>(false, ErrorCode.TRANSACTION_TIMEOUT);

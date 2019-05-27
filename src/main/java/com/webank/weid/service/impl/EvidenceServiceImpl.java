@@ -53,6 +53,7 @@ import com.webank.weid.protocol.base.EvidenceInfo;
 import com.webank.weid.protocol.base.WeIdDocument;
 import com.webank.weid.protocol.base.WeIdPrivateKey;
 import com.webank.weid.protocol.response.ResponseData;
+import com.webank.weid.protocol.response.TransactionInfo;
 import com.webank.weid.rpc.EvidenceService;
 import com.webank.weid.rpc.WeIdService;
 import com.webank.weid.service.BaseService;
@@ -95,6 +96,19 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
     }
 
     /**
+     * Use the evidence creator's private key to send the transaction to call the contract.
+     *
+     * @param privateKey the private key
+     */
+    private static void reloadContract(String privateKey) {
+        evidenceFactory = (EvidenceFactory) reloadContract(
+            evidenceFactoryAddress,
+            privateKey,
+            EvidenceFactory.class
+        );
+    }
+
+    /**
      * Create a new evidence to the blockchain and store its address into the credential.
      */
     @Override
@@ -106,18 +120,13 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             .isCreateEvidenceArgsValid(credential, weIdPrivateKey);
         if (ErrorCode.SUCCESS.getCode() != innerResponse.getCode()) {
             logger.error("Create Evidence input format error!");
-            return new ResponseData<>(
-                StringUtils.EMPTY,
-                innerResponse
-            );
+            return new ResponseData<>(StringUtils.EMPTY, innerResponse);
         }
 
         innerResponse = CredentialUtils.isCredentialValid(credential);
         if (ErrorCode.SUCCESS.getCode() != innerResponse.getCode()) {
             logger.error("Create Evidence input format error: credential!");
-            return new ResponseData<>(
-                StringUtils.EMPTY,
-                innerResponse);
+            return new ResponseData<>(StringUtils.EMPTY, innerResponse);
         }
 
         try {
@@ -142,6 +151,7 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             List<Address> signer = new ArrayList<>();
             signer.add(new Address(Keys.getAddress(DataToolUtils
                 .createKeyPairFromPrivate(new BigInteger(weIdPrivateKey.getPrivateKey())))));
+            reloadContract(weIdPrivateKey.getPrivateKey());
             Future<TransactionReceipt> future = evidenceFactory.createEvidence(
                 new DynamicArray<Bytes32>(generateBytes32List(hashAttributes)),
                 new DynamicArray<Address>(signer),
@@ -154,6 +164,7 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             TransactionReceipt receipt = future.get(
                 WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT,
                 TimeUnit.SECONDS);
+            TransactionInfo info = new TransactionInfo(receipt);
             List<CreateEvidenceLogEventResponse> eventResponseList =
                 EvidenceFactory.getCreateEvidenceLogEvents(receipt);
             CreateEvidenceLogEventResponse event = eventResponseList.get(0);
@@ -161,21 +172,18 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             if (event != null) {
                 innerResponse = verifyCreateEvidenceEvent(event);
                 if (ErrorCode.SUCCESS.getCode() != innerResponse.getCode()) {
-                    return new ResponseData<>(
-                        StringUtils.EMPTY,
-                        innerResponse
-                    );
+                    return new ResponseData<>(StringUtils.EMPTY, innerResponse, info);
                 }
-                return new ResponseData<>(event.addr.toString(), ErrorCode.SUCCESS);
+                return new ResponseData<>(event.addr.toString(), ErrorCode.SUCCESS, info);
             } else {
                 logger
                     .error(
                         "create evidence failed due to transcation event decoding failure. ");
                 return new ResponseData<>(StringUtils.EMPTY,
-                    ErrorCode.CREDENTIAL_EVIDENCE_BASE_ERROR);
+                    ErrorCode.CREDENTIAL_EVIDENCE_BASE_ERROR, info);
             }
         } catch (TimeoutException e) {
-            logger.error("create evidencefailed due to system timeout. ", e);
+            logger.error("create evidence failed due to system timeout. ", e);
             return new ResponseData<>(StringUtils.EMPTY, ErrorCode.TRANSACTION_TIMEOUT);
         } catch (InterruptedException | ExecutionException e) {
             logger.error("create evidence failed due to transaction error. ", e);

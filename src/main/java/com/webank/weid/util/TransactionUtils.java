@@ -19,6 +19,7 @@
 
 package com.webank.weid.util;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,8 +45,11 @@ import org.bcos.web3j.abi.datatypes.generated.Bytes32;
 import org.bcos.web3j.abi.datatypes.generated.Int256;
 import org.bcos.web3j.abi.datatypes.generated.Uint256;
 import org.bcos.web3j.protocol.Web3j;
+import org.bcos.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.bcos.web3j.protocol.core.methods.response.EthBlock;
 import org.bcos.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
 import org.bcos.web3j.protocol.core.methods.response.EthSendTransaction;
+import org.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.bcos.web3j.protocol.exceptions.TransactionTimeoutException;
 import org.slf4j.Logger;
@@ -60,6 +65,7 @@ import com.webank.weid.contract.CptController.RegisterCptRetLogEventResponse;
 import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.protocol.response.RsvSignature;
+import com.webank.weid.protocol.response.TransactionInfo;
 import com.webank.weid.service.BaseService;
 
 /**
@@ -413,7 +419,8 @@ public class TransactionUtils {
         return getResultByResolveEvent(
             event.get(0).retCode,
             event.get(0).cptId,
-            event.get(0).cptVersion
+            event.get(0).cptVersion,
+            transactionReceipt
         );
     }
 
@@ -428,26 +435,28 @@ public class TransactionUtils {
     public static ResponseData<CptBaseInfo> getResultByResolveEvent(
         Uint256 retCode,
         Uint256 cptId,
-        Int256 cptVersion) {
+        Int256 cptVersion,
+        TransactionReceipt receipt) {
 
+        TransactionInfo info = new TransactionInfo(receipt);
         // register
         if (DataToolUtils.uint256ToInt(retCode)
             == ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX.getCode()) {
             logger.error("[getResultByResolveEvent] cptId limited max value. cptId:{}",
                 DataToolUtils.uint256ToInt(cptId));
-            return new ResponseData<>(null, ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX);
+            return new ResponseData<>(null, ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX, info);
         }
 
         if (DataToolUtils.uint256ToInt(retCode) == ErrorCode.CPT_ALREADY_EXIST.getCode()) {
             logger.error("[getResultByResolveEvent] cpt already exists on chain. cptId:{}",
                 DataToolUtils.uint256ToInt(cptId));
-            return new ResponseData<>(null, ErrorCode.CPT_ALREADY_EXIST);
+            return new ResponseData<>(null, ErrorCode.CPT_ALREADY_EXIST, info);
         }
 
         if (DataToolUtils.uint256ToInt(retCode) == ErrorCode.CPT_NO_PERMISSION.getCode()) {
             logger.error("[getResultByResolveEvent] no permission. cptId:{}",
                 DataToolUtils.uint256ToInt(cptId));
-            return new ResponseData<>(null, ErrorCode.CPT_NO_PERMISSION);
+            return new ResponseData<>(null, ErrorCode.CPT_NO_PERMISSION, info);
         }
 
         // register and update
@@ -455,7 +464,7 @@ public class TransactionUtils {
             == ErrorCode.CPT_PUBLISHER_NOT_EXIST.getCode()) {
             logger.error("[getResultByResolveEvent] publisher does not exist. cptId:{}",
                 DataToolUtils.uint256ToInt(cptId));
-            return new ResponseData<>(null, ErrorCode.CPT_PUBLISHER_NOT_EXIST);
+            return new ResponseData<>(null, ErrorCode.CPT_PUBLISHER_NOT_EXIST, info);
         }
 
         // update
@@ -463,14 +472,76 @@ public class TransactionUtils {
             == ErrorCode.CPT_NOT_EXISTS.getCode()) {
             logger.error("[getResultByResolveEvent] cpt id : {} does not exist.",
                 DataToolUtils.uint256ToInt(cptId));
-            return new ResponseData<>(null, ErrorCode.CPT_NOT_EXISTS);
+            return new ResponseData<>(null, ErrorCode.CPT_NOT_EXISTS, info);
         }
 
         CptBaseInfo result = new CptBaseInfo();
         result.setCptId(DataToolUtils.uint256ToInt(cptId));
         result.setCptVersion(DataToolUtils.int256ToInt(cptVersion));
 
-        ResponseData<CptBaseInfo> responseData = new ResponseData<>(result, ErrorCode.SUCCESS);
+        ResponseData<CptBaseInfo> responseData = new ResponseData<>(result, ErrorCode.SUCCESS,
+            info);
         return responseData;
+    }
+
+
+    /**
+     * Get the transaction instance from blockchain. Requires an on-chain Read operation.
+     *
+     * @param info the transaction info
+     * @return the transaction
+     */
+    public static Transaction getTransaction(TransactionInfo info) {
+        if (info == null) {
+            return null;
+        }
+        Web3j web3j = BaseService.getWeb3j();
+        EthBlock ethBlock = null;
+        BigInteger blockNumber = info.getBlockNumber();
+        try {
+            ethBlock = web3j
+                .ethGetBlockByNumber(new DefaultBlockParameterNumber(blockNumber), true).send();
+        } catch (IOException e) {
+            logger.error("Cannot get a block with number: {}. Error: {}", blockNumber, e);
+        }
+        if (ethBlock == null) {
+            logger.error("Block number {} is null", blockNumber);
+            return null;
+        }
+        List<Transaction> transactionList;
+        try {
+            transactionList = getTransactionListFromBlock(ethBlock);
+        } catch (Exception e) {
+            logger.error(
+                "Error occurred during getting transaction list with block number: {}. Error: {}",
+                blockNumber, e);
+            return null;
+        }
+        if (transactionList.size() == 0) {
+            logger.error("Cannot get any transaction with block number: {}", blockNumber);
+            return null;
+        }
+        return getTransactionFromList(transactionList, info);
+    }
+
+    private static List<Transaction> getTransactionListFromBlock(EthBlock ethBlock) {
+        return ethBlock
+            .getBlock()
+            .getTransactions()
+            .stream()
+            .map(transactionResult -> (Transaction) transactionResult.get())
+            .collect(Collectors.toList());
+    }
+
+    private static Transaction getTransactionFromList(List<Transaction> transactionList,
+        TransactionInfo info) {
+        for (Transaction transaction : transactionList) {
+            if (transaction.getHash().equalsIgnoreCase(info.getTransactionHash())
+                && transaction.getTransactionIndex().longValue() == info.getTransactionIndex()
+                .longValue()) {
+                return transaction;
+            }
+        }
+        return null;
     }
 }
