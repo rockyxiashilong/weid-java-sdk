@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.crypto.Sign;
+import org.fisco.bcos.web3j.crypto.Sign;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -252,14 +252,12 @@ public class CredentialServiceImpl extends BaseService implements CredentialServ
     private ErrorCode verifyCptFormat(Integer cptId, Map<String, Object> claim) {
 
         try {
-            //String claimStr = JsonUtil.objToJsonStr(claim);
             String claimStr = DataToolUtils.serialize(claim);
             Cpt cpt = cptService.queryCpt(cptId).getResult();
             if (cpt == null) {
                 logger.error(ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCodeDesc());
                 return ErrorCode.CREDENTIAL_CPT_NOT_EXISTS;
             }
-            //String cptJsonSchema = JsonUtil.objToJsonStr(cpt.getCptJsonSchema());
             String cptJsonSchema = DataToolUtils.serialize(cpt.getCptJsonSchema());
 
             if (!DataToolUtils.isCptJsonSchemaValid(cptJsonSchema)) {

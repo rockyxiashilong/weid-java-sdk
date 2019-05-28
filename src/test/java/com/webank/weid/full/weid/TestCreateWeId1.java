@@ -21,16 +21,13 @@ package com.webank.weid.full.weid;
 
 import java.security.NoSuchProviderException;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.crypto.ECKeyPair;
-import org.bcos.web3j.crypto.Keys;
-import org.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.Keys;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -48,6 +45,9 @@ import com.webank.weid.rpc.RawTransactionService;
 import com.webank.weid.service.impl.RawTransactionServiceImpl;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * non parametric createWeId method for testing WeIdService.
@@ -76,52 +76,6 @@ public class TestCreateWeId1 extends TestBaseServcie {
         Assert.assertNotNull(transaction);
         Assert.assertFalse(WeIdUtils.isEmptyAddress(new Address(transaction.getFrom())));
         Assert.assertFalse(WeIdUtils.isEmptyAddress(new Address(transaction.getTo())));
-    }
-
-    /**
-     * case: Simulation throws an TimeoutException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
-     */
-    @Test
-    public void testCreateWeIdCase2() {
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<CreateWeIdDataResult> response = createWeIdForMock(mockFuture);
-        LogUtil.info(logger, "createWeId", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    /**
-     * case: Simulation throws an InterruptedException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
-     */
-    @Test
-    public void testCreateWeIdCase3() {
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<CreateWeIdDataResult> response = createWeIdForMock(mockFuture);
-        LogUtil.info(logger, "createWeId", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    private ResponseData<CreateWeIdDataResult> createWeIdForMock(MockUp<Future<?>> mockFuture) {
-        
-        MockUp<WeIdContract> mockTest = mockSetAttribute(mockFuture);
-
-        ResponseData<CreateWeIdDataResult> response = weIdService.createWeId();
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
     }
 
     /**

@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.crypto.ECKeyPair;
-import org.bcos.web3j.crypto.Keys;
+import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.JsonSchemaConstant;
@@ -202,7 +202,7 @@ public class TestBaseUtil {
 
         AuthorityIssuer authorityIssuer = new AuthorityIssuer();
         authorityIssuer.setWeId(createWeId.getWeId());
-        authorityIssuer.setName(TestData.AUTHORITY_ISSUER_NAME);
+        authorityIssuer.setName(TestData.AUTHORITY_ISSUER_NAME + System.currentTimeMillis());
         authorityIssuer.setAccValue(TestData.AUTHORITY_ISSUER_ACCVALUE);
 
         RegisterAuthorityIssuerArgs registerAuthorityIssuerArgs = new RegisterAuthorityIssuerArgs();
@@ -374,28 +374,68 @@ public class TestBaseUtil {
         } catch (IOException e) {
             logger.error("resolvePk error:", e);
         }  finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    logger.error("BufferedReader close error:", e);
-                }
-            }
-            if (isr != null) {
-                try {
-                    isr.close();
-                } catch (IOException e) {
-                    logger.error("InputStreamReader close error:", e);
-                }
-            }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    logger.error("FileInputStream close error:", e);
-                }
-            }
+        	closeStream(br,fis,isr);
         }
         return passwordKey;
     }
+    
+    public static String readPrivateKeyFromFile(String fileName) {
+    	
+    	BufferedReader br = null;
+        FileInputStream fis = null;
+        InputStreamReader isr = null;
+        StringBuffer privateKey = new StringBuffer();
+    	
+    	URL fileUrl = TestBaseUtil.class.getClassLoader().getResource(fileName);
+        if (fileUrl == null) {
+            return privateKey.toString();
+        }
+
+        String filePath = fileUrl.getFile();
+        if (filePath == null) {
+            return privateKey.toString();
+        }
+
+        try {
+			fis = new FileInputStream(fileUrl.getFile());
+			isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+			br = new BufferedReader(isr);
+						
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				privateKey.append(line);
+			}
+		} catch (Exception e) {
+			logger.error("read privateKey from {} failed, error:{}",fileName,e);
+		} finally {
+        	closeStream(br,fis,isr);
+        }
+        
+    	return privateKey.toString();
+    }
+    
+    private static void closeStream(BufferedReader br, FileInputStream fis, InputStreamReader isr) {
+    	if (br != null) {
+            try {
+                br.close();
+            } catch (IOException e) {
+                logger.error("BufferedReader close error:", e);
+            }
+        }
+        if (isr != null) {
+            try {
+                isr.close();
+            } catch (IOException e) {
+                logger.error("InputStreamReader close error:", e);
+            }
+        }
+        if (fis != null) {
+            try {
+                fis.close();
+            } catch (IOException e) {
+                logger.error("FileInputStream close error:", e);
+            }
+        }
+    }
+    
 }

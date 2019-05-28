@@ -19,15 +19,11 @@
 
 package com.webank.weid.full.cpt;
 
+import java.math.BigInteger;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.DynamicArray;
-import org.bcos.web3j.abi.datatypes.Type;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Uint256;
+import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.tuples.generated.Tuple7;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -36,15 +32,15 @@ import org.slf4j.LoggerFactory;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.contract.CptController;
-import com.webank.weid.exception.DataTypeCastException;
-import com.webank.weid.exception.WeIdBaseException;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.base.Cpt;
 import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.request.CptMapArgs;
 import com.webank.weid.protocol.response.ResponseData;
-import com.webank.weid.util.DataToolUtils;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * queryCpt method for testing CptService.
@@ -147,32 +143,6 @@ public class TestQueryCpt extends TestBaseServcie {
     }
 
     /**
-     * case: mock an InterruptedException.
-     */
-    @Test
-    public void testQueryCptCase6() {
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        MockUp<CptController> mockTest = new MockUp<CptController>() {
-            @Mock
-            public Future<?> queryCpt(Uint256 cptId) {
-                return mockFuture.getMockInstance();
-            }
-        };
-
-        ResponseData<Cpt> response = cptService.queryCpt(cptBaseInfo.getCptId());
-        LogUtil.info(logger, "queryCpt", response);
-
-        mockTest.tearDown();
-        mockFuture.tearDown();
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    /**
      * case: mock returns null.
      */
     @Test
@@ -180,9 +150,17 @@ public class TestQueryCpt extends TestBaseServcie {
 
         MockUp<CptController> mockTest = new MockUp<CptController>() {
             @Mock
-            public Future<List<Type<?>>> queryCpt(Uint256 cptId) {
-                return null;
-            }
+            public RemoteCall<Tuple7<
+	            String, 
+	            List<BigInteger>, 
+	            List<byte[]>, 
+	            List<byte[]>, 
+	            BigInteger, 
+	            byte[], 
+	            byte[]>
+            > queryCpt(BigInteger cptId) {
+            return null;
+            }   
         };
 
         ResponseData<Cpt> response = cptService.queryCpt(cptBaseInfo.getCptId());
@@ -193,34 +171,4 @@ public class TestQueryCpt extends TestBaseServcie {
         Assert.assertEquals(ErrorCode.UNKNOW_ERROR.getCode(), response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
     }
-
-    /**
-     * case: mock DataTypetUtils.bytes32DynamicArrayToStringArrayWithoutTrim()
-     *      for DataTypeCastException.DataTypeCastException()
-     */
-    @Test
-    public void testQueryCptCase8() {
-
-        MockUp<DataToolUtils> mockTest = new MockUp<DataToolUtils>() {
-            @Mock
-            public String[] bytes32DynamicArrayToStringArrayWithoutTrim(
-                DynamicArray<Bytes32> bytes32DynamicArray)
-                throws DataTypeCastException {
-                WeIdBaseException e = new WeIdBaseException(
-                    "mock DataTypeCastException for coverage.");
-                logger.error("testQueryCptCase8:{}", e.toString(), e);
-                throw new DataTypeCastException(e);
-            }
-        };
-
-        ResponseData<Cpt> response = cptService.queryCpt(cptBaseInfo.getCptId());
-        LogUtil.info(logger, "queryCpt", response);
-
-        mockTest.tearDown();
-
-        Assert.assertEquals(ErrorCode.UNKNOW_ERROR.getCode(), response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-
 }

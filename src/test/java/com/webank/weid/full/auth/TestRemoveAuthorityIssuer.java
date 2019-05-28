@@ -21,12 +21,8 @@ package com.webank.weid.full.auth;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -42,6 +38,9 @@ import com.webank.weid.protocol.request.RegisterAuthorityIssuerArgs;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * removeAuthorityIssuer method for testing AuthorityIssuerService.
@@ -148,7 +147,7 @@ public class TestRemoveAuthorityIssuer extends TestBaseServcie {
         while (response.getErrorCode()
             == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
             String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
+            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name);
             response = authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
         }
         LogUtil.info(logger, "registerAuthorityIssuer", response);
@@ -309,102 +308,6 @@ public class TestRemoveAuthorityIssuer extends TestBaseServcie {
         Assert.assertEquals(ErrorCode.CONTRACT_ERROR_NO_PERMISSION.getCode(),
             response.getErrorCode().intValue());
         Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: privateKey and private key of WeIdentity DID do not match.
-     */
-    @Test
-    public void testRemoveAuthorityIssuerCase13() {
-
-        CreateWeIdDataResult createWeId = super.createWeId();
-
-        RegisterAuthorityIssuerArgs registerAuthorityIssuerArgs =
-            TestBaseUtil.buildRegisterAuthorityIssuerArgs(createWeId, privateKey);
-
-        ResponseData<Boolean> responseRegister = new ResponseData<>(false,
-            ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS);
-
-        while (responseRegister.getErrorCode()
-            == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
-            String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
-            responseRegister = authorityIssuerService
-                .registerAuthorityIssuer(registerAuthorityIssuerArgs);
-        }
-        LogUtil.info(logger, "registerAuthorityIssuer", responseRegister);
-
-        RemoveAuthorityIssuerArgs removeAuthorityIssuerArgs =
-            TestBaseUtil.buildRemoveAuthorityIssuerArgs(createWeId, privateKey);
-        removeAuthorityIssuerArgs.getWeIdPrivateKey()
-            .setPrivateKey(TestBaseUtil.createEcKeyPair().getPrivateKey());
-
-        ResponseData<Boolean> response =
-            authorityIssuerService.removeAuthorityIssuer(removeAuthorityIssuerArgs);
-        LogUtil.info(logger, "removeAuthorityIssuer", response);
-
-        Assert.assertEquals(ErrorCode.CONTRACT_ERROR_NO_PERMISSION.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: mock an InterruptedException.
-     */
-    @Test
-    public void testRemoveAuthorityIssuerCase14() {
-
-        RemoveAuthorityIssuerArgs removeAuthorityIssuerArgs =
-            TestBaseUtil.buildRemoveAuthorityIssuerArgs(createWeIdResult, privateKey);
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<Boolean> response1 =
-            removeAuthorityIssuerForMock(removeAuthorityIssuerArgs, mockFuture);
-        LogUtil.info(logger, "removeAuthorityIssuer", response1);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response1.getErrorCode().intValue());
-        Assert.assertEquals(false, response1.getResult());
-    }
-
-    private ResponseData<Boolean> removeAuthorityIssuerForMock(
-        RemoveAuthorityIssuerArgs removeAuthorityIssuerArgs,
-        MockUp<Future<?>> mockFuture) {
-
-        MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
-            @Mock
-            public Future<?> removeAuthorityIssuer(Address addr) {
-
-                return mockFuture.getMockInstance();
-            }
-        };
-
-        ResponseData<Boolean> response1 =
-            authorityIssuerService.removeAuthorityIssuer(removeAuthorityIssuerArgs);
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response1;
-    }
-
-    /**
-     * case: mock an TimeoutException.
-     */
-    @Test
-    public void testRemoveAuthorityIssuerCase15() {
-
-        RemoveAuthorityIssuerArgs removeAuthorityIssuerArgs =
-            TestBaseUtil.buildRemoveAuthorityIssuerArgs(createWeIdResult, privateKey);
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<Boolean> response1 =
-            removeAuthorityIssuerForMock(removeAuthorityIssuerArgs, mockFuture);
-        LogUtil.info(logger, "removeAuthorityIssuer", response1);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response1.getErrorCode().intValue());
-        Assert.assertEquals(false, response1.getResult());
     }
 
     /**

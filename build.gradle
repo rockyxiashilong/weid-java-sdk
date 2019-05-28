@@ -30,6 +30,7 @@ repositories {
     maven {
         url "http://maven.aliyun.com/nexus/content/groups/public/"
     }
+    maven { url "https://dl.bintray.com/ethereum/maven/" }
 }
 
 List lombok = [
@@ -77,15 +78,11 @@ List json = [
 ]
 
 List weidentity_contract = [
-    "com.webank:weidentity-contract-java:1.2.2"
+    "com.webank:weidentity-contract-java:1.3.0.rc-2"
 ]
 
 List mysql_driver = [
     "mysql:mysql-connector-java:5.1.44"
-]
-
-List web3sdk = [
-    "org.fisco-bcos:web3sdk:1.2.5"
 ]
 
 List zxing = [
@@ -94,8 +91,8 @@ List zxing = [
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile logger, spring, lombok, apache_commons, json, web3sdk, weidentity_contract, mysql_driver, zxing
-    testCompile logger, spring, lombok, apache_commons, json, web3sdk, junit, jmockit
+    compile logger, spring, lombok, apache_commons, json, mysql_driver, zxing, weidentity_contract
+    testCompile logger, spring, lombok, apache_commons, json, junit, jmockit, weidentity_contract
 }
 
 jacocoTestReport {

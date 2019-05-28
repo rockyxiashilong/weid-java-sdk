@@ -19,18 +19,8 @@
 
 package com.webank.weid.full.evidence;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
-
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.DynamicArray;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Uint8;
-import org.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,8 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.constant.ErrorCode;
-import com.webank.weid.contract.EvidenceFactory;
-import com.webank.weid.contract.EvidenceFactory.CreateEvidenceLogEventResponse;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.protocol.base.Credential;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
@@ -229,86 +217,6 @@ public class TestCreateEvidence extends TestBaseServcie {
             ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCode(),
             response.getErrorCode().intValue());
         Assert.assertFalse(!response.getResult().isEmpty());
-    }
-
-    /**
-     * case13: mock TimeOutException.
-     */
-    @Test
-    public void testCreateEvidenceCase10() {
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-        ResponseData<String> response = this.createEvidence(mockFuture);
-        LogUtil.info(logger, "createEvidence", response);
-
-        Assert.assertEquals(
-            ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertFalse(!response.getResult().isEmpty());
-    }
-
-    /**
-     * case14: mock InterruptedException.
-     */
-    @Test
-    public void testCreateEvidenceCase11() {
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-        ResponseData<String> response = this.createEvidence(mockFuture);
-        LogUtil.info(logger, "createEvidence", response);
-
-        Assert.assertEquals(
-            ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertFalse(!response.getResult().isEmpty());
-    }
-
-    /**
-     * case15: mock InterruptedException.
-     */
-    @Test
-    public void testCreateEvidenceCase12() {
-        MockUp<EvidenceFactory> mockTest = new MockUp<EvidenceFactory>() {
-            @Mock
-            public List<CreateEvidenceLogEventResponse> getCreateEvidenceLogEvents(
-                TransactionReceipt transactionReceipt) {
-
-                List<CreateEvidenceLogEventResponse> eventResponseList =
-                    new ArrayList<CreateEvidenceLogEventResponse>();
-                eventResponseList.add(null);
-                return eventResponseList;
-            }
-        };
-
-        ResponseData<String> response = evidenceService
-            .createEvidence(credential, createWeIdNew.getUserWeIdPrivateKey());
-        mockTest.tearDown();
-        LogUtil.info(logger, "createEvidence", response);
-
-        Assert.assertEquals(
-            ErrorCode.CREDENTIAL_EVIDENCE_BASE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertFalse(!response.getResult().isEmpty());
-    }
-
-    private ResponseData<String> createEvidence(MockUp<Future<?>> mockFuture) {
-        MockUp<EvidenceFactory> mockTest = new MockUp<EvidenceFactory>() {
-            @Mock
-            public Future<?> createEvidence(
-                DynamicArray<Bytes32> credentialHash,
-                DynamicArray<Address> signer,
-                Bytes32 r,
-                Bytes32 s,
-                Uint8 v,
-                DynamicArray<Bytes32> extra
-            ) {
-
-                return mockFuture.getMockInstance();
-            }
-        };
-        ResponseData<String> response = evidenceService
-            .createEvidence(credential, createWeIdNew.getUserWeIdPrivateKey());
-        mockFuture.tearDown();
-        mockTest.tearDown();
-        return response;
     }
 
 }

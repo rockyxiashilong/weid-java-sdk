@@ -19,13 +19,12 @@
 
 package com.webank.weid.full.auth;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.Type;
+import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -40,6 +39,9 @@ import com.webank.weid.protocol.base.AuthorityIssuer;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * queryAuthorityIssuerInfo method for testing AuthorityIssuerService.
@@ -163,38 +165,6 @@ public class TestQueryAuthorityIssuerInfo extends TestBaseServcie {
     }
 
     /**
-     * case: mock an InterruptedException.
-     */
-    @Test
-    public void testQueryAuthorityIssuerInfoCase7() {
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<AuthorityIssuer> response = queryAuthorityIssuerInfoForMock(mockFuture);
-        LogUtil.info(logger, "queryAuthorityIssuerInfo", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    /**
-     * case: mock an TimeoutException.
-     */
-    @Test
-    public void testQueryAuthorityIssuerInfoCase8() {
-
-        final MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<AuthorityIssuer> response = queryAuthorityIssuerInfoForMock(mockFuture);
-        LogUtil.info(logger, "queryAuthorityIssuerInfo", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    /**
      * case: mock returns null when invoking the future.get().
      */
     @Test
@@ -215,8 +185,9 @@ public class TestQueryAuthorityIssuerInfo extends TestBaseServcie {
 
         MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
             @Mock
-            public Future<?> getAuthorityIssuerInfoNonAccValue(Address addr) {
-                return mockFuture.getMockInstance();
+            public RemoteCall<Tuple2<List<byte[]>, 
+                List<BigInteger>>> getAuthorityIssuerInfoNonAccValue(String addr) {
+                return null;
             }
         };
 
@@ -235,7 +206,8 @@ public class TestQueryAuthorityIssuerInfo extends TestBaseServcie {
 
         MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
             @Mock
-            public Future<List<Type<?>>> getAuthorityIssuerInfoNonAccValue(Address addr) {
+            public RemoteCall<Tuple2<List<byte[]>, List<BigInteger>>> 
+                getAuthorityIssuerInfoNonAccValue(String addr) {
                 return null;
             }
         };

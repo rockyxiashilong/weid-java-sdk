@@ -19,12 +19,7 @@
 
 package com.webank.weid.full.auth;
 
-import java.util.concurrent.Future;
-
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.Bool;
+import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,6 +33,9 @@ import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * isAuthorityIssuer method for testing AuthorityIssuerService.
@@ -164,58 +162,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation throws an InterruptedException when calling the
-     *       isAuthorityIssuer method.
-     *
-     */
-    @Test
-    public void testIsAuthorityIssuerCase7() {
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<Boolean> response = isAuthorityIssuerForMock(mockFuture);
-        LogUtil.info(logger, "isAuthorityIssuer", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: Simulation throws an TimeoutException when calling the
-     *       isAuthorityIssuer method.
-     *
-     */
-    @Test
-    public void testIsAuthorityIssuerCase8() {
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<Boolean> response = isAuthorityIssuerForMock(mockFuture);
-        LogUtil.info(logger, "isAuthorityIssuer", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    private ResponseData<Boolean> isAuthorityIssuerForMock(MockUp<Future<?>> mockFuture) {
-        
-        MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
-            @Mock
-            public Future<?> isAuthorityIssuer(Address addr) {
-                return mockFuture.getMockInstance();
-            }
-        };
-
-        ResponseData<Boolean> response =
-            authorityIssuerService.isAuthorityIssuer(createWeId.getWeId());
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
      * case: Simulation returns null when invoking the isAuthorityIssuer method.
      *
      */
@@ -224,7 +170,7 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
         MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
             @Mock
-            public Future<Bool> isAuthorityIssuer(Address addr) {
+            public RemoteCall<Boolean> isAuthorityIssuer(String addr) {
                 return null;
             }
         };

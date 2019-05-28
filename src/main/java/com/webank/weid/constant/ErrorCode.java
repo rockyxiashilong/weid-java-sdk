@@ -438,14 +438,14 @@ public enum ErrorCode {
         500202,
         "the authority issuer contract error: the subject does not exist"
     ),
-
+    
     /**
      * The Authority Issuer Contract level error: name already exists.
      */
     AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS(
-        500204,
+        500203,
         "the authority issuer name already exists."
-    ),
+    ), 
 
     /**
      * The Specific Issuer Contract level error: already exists.

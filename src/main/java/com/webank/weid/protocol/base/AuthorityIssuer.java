@@ -23,7 +23,7 @@ import lombok.Data;
 
 /**
  * The base data structure to handle Authority Issuer info.
- *
+ * 
  * @author chaoxinhu 2018.10
  */
 @Data
