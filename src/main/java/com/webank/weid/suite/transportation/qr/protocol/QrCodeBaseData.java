@@ -148,7 +148,7 @@ public abstract class QrCodeBaseData {
     /**
      * 序列化协议对象.
      *
-     * @param protocol 协议模板字符串
+     * @param protocols 协议模板字符串
      */
     protected void buildBuffer(String[] protocols) {
         buffer.setLength(0);
@@ -191,7 +191,7 @@ public abstract class QrCodeBaseData {
     /**
      * 根据协议字符串数据构建协议对象数据.
      *
-     * @param protocol 协议模板字符串
+     * @param protocols 协议模板字符串
      * @param transString 协议字符串数据
      */
     protected void buildData(String[] protocols, String transString) {

@@ -1,3 +1,10 @@
+### v1.3.0.rc-2 (2019-05-29)
+
+- Features:
+1. Support FISCO-BCOS 2.0.
+
+
+
 ### v1.1.2 (2019-05-22)
 
 - Features:

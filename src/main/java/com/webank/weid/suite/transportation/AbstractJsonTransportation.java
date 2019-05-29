@@ -40,7 +40,7 @@ public abstract class AbstractJsonTransportation
     /**
      * 验证协议配置.
      *
-     * @param protocolProperty 协议配置实体
+     * @param encodeProperty 协议配置实体
      */
     protected ErrorCode checkEncodeProperty(ProtocolProperty encodeProperty) {
         if (encodeProperty == null) {
@@ -55,7 +55,7 @@ public abstract class AbstractJsonTransportation
     /**
      * 验证wrapper数据.
      *
-     * @param wrapper wrapper数据,作为协议的rawData部分
+     * @param obj wrapper数据,作为协议的rawData部分
      */
     protected ErrorCode checkProtocolData(Object obj) {
         if (obj == null) {

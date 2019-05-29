@@ -312,10 +312,8 @@ public final class DataToolUtils {
 
     /**
      * 对象深度复制(对象必须是实现了Serializable接口).
-     *
-     * @return T
-     * @author tonychen
-     * @date 2019/4/18
+     * @param obj obj
+     * @return T result
      */
     @SuppressWarnings("unchecked")
     public static <T extends Serializable> T clone(T obj) {

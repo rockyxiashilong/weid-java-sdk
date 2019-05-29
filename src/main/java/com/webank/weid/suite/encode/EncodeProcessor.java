@@ -33,7 +33,7 @@ public interface EncodeProcessor {
      * 编码处理方法定义.
      *
      * @param encodeData 需要编码的实体数据
-     * @value 返回编码后的数据
+     * @return 返回编码后的数据
      */
     public String encode(EncodeData encodeData) throws EncodeSuiteException;
 
@@ -41,7 +41,7 @@ public interface EncodeProcessor {
      * 解码处理方法定义.
      *
      * @param encodeData 需要解码的实体数据
-     * @value 返回解密后的数据
+     * @return 返回解密后的数据
      */
     public String decode(EncodeData encodeData) throws EncodeSuiteException;
 }
