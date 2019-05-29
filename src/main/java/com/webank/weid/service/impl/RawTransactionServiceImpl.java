@@ -51,23 +51,23 @@ import com.webank.weid.util.TransactionUtils;
 public class RawTransactionServiceImpl extends BaseService implements RawTransactionService {
 
     private static final Logger logger = LoggerFactory.getLogger(RawTransactionServiceImpl.class);
-    
+
     /**
      * WeIdentity DID contract object, for calling weIdentity DID contract.
      */
     private static WeIdContract weIdContract;
-    
+
     /**
      * WeIdentity DID contract object, for calling weIdentity DID contract.
      */
     private static AuthorityIssuerController authorityIssuerController;
-    
+
     /**
      * WeIdentity DID contract object, for calling weIdentity DID contract.
      */
     private static CptController cptController;
-    
-    
+
+
     public RawTransactionServiceImpl() {
         init();
     }
@@ -76,7 +76,8 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
 
         // initialize the WeIdentity DID contract
         ContractConfig config = context.getBean(ContractConfig.class);
-        weIdContract = (WeIdContract) getContractService(config.getWeIdAddress(), WeIdContract.class);
+        weIdContract = (WeIdContract) getContractService(config.getWeIdAddress(),
+            WeIdContract.class);
         authorityIssuerController =
             (AuthorityIssuerController)
                 getContractService(config.getIssuerAddress(), AuthorityIssuerController.class);
@@ -128,7 +129,7 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             }
             TransactionReceipt transactionReceipt = TransactionUtils
                 .sendTransaction(getWeb3j(), transactionHex);
-            
+
             List<AuthorityIssuerRetLogEventResponse> eventList =
                 authorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
@@ -158,12 +159,12 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             }
             TransactionReceipt transactionReceipt = TransactionUtils
                 .sendTransaction(getWeb3j(), transactionHex);
-            CptBaseInfo cptBaseInfo = 
+            CptBaseInfo cptBaseInfo =
                 TransactionUtils.resolveRegisterCptEvents(
                     transactionReceipt,
-            	    cptController
+                    cptController
                 ).getResult();
-            
+
             TransactionInfo info = new TransactionInfo(transactionReceipt);
             if (cptBaseInfo != null) {
                 return new ResponseData<>(DataToolUtils.objToJsonStrWithNoPretty(cptBaseInfo),

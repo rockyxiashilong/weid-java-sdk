@@ -24,6 +24,9 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
@@ -33,7 +36,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.ErrorCode;
@@ -49,9 +51,6 @@ import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * updateCpt method for testing CptService.
@@ -191,14 +190,14 @@ public class TestUpdateCpt extends TestBaseServcie {
         MockUp<CptController> mockTest = new MockUp<CptController>() {
             @Mock
             public RemoteCall<TransactionReceipt> updateCpt(
-            	BigInteger cptId, 
-            	String publisher, 
-            	List<BigInteger> intArray, 
-            	List<byte[]> bytes32Array, 
-            	List<byte[]> jsonSchemaArray, 
-            	BigInteger v, 
-            	byte[] r, 
-            	byte[] s) {
+                BigInteger cptId,
+                String publisher,
+                List<BigInteger> intArray,
+                List<byte[]> bytes32Array,
+                List<byte[]> jsonSchemaArray,
+                BigInteger v,
+                byte[] r,
+                byte[] s) {
                 return null;
             }
         };

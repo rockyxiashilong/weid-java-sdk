@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.EventEncoder;
@@ -42,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.webank.weid.config.ContractConfig;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.ResolveEventLogStatus;
@@ -104,12 +104,12 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
 
     static {
         // initialize the event topic
-    	 topicMap = new HashMap<String, String>();
-         
-         topicMap.put(
-             EventEncoder.encode(WeIdContract.WEIDATTRIBUTECHANGED_EVENT),
-             WeIdEventConstant.WEID_EVENT_ATTRIBUTE_CHANGE
-         );
+        topicMap = new HashMap<String, String>();
+
+        topicMap.put(
+            EventEncoder.encode(WeIdContract.WEIDATTRIBUTECHANGED_EVENT),
+            WeIdEventConstant.WEID_EVENT_ATTRIBUTE_CHANGE
+        );
     }
 
     /**
@@ -399,7 +399,7 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
             ErrorCode.getTypeByErrorCode(innerRespData.getErrorCode()),
             innerRespData.getTransactionInfo());
     }
-    
+
     /**
      * Create a WeIdentity DID.
      *
@@ -489,7 +489,7 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
         } catch (PrivateKeyIllegalException e) {
             return new ResponseData<>(false, e.getErrorCode());
         } catch (Exception e) {
-        	logger.error("createWeId failed,e",e);
+            logger.error("createWeId failed,e", e);
             return new ResponseData<>(false, ErrorCode.UNKNOW_ERROR);
         }
     }
@@ -516,7 +516,7 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
         try {
             String identityAddr = WeIdUtils.convertWeIdToAddress(weId);
             latestBlockNumber = weIdContract
-                    .getLatestRelatedBlock(identityAddr).send().intValue();
+                .getLatestRelatedBlock(identityAddr).send().intValue();
             if (0 == latestBlockNumber) {
                 return new ResponseData<>(null, ErrorCode.WEID_DOES_NOT_EXIST);
             }
@@ -633,16 +633,17 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
                 privateKey,
                 WeIdContract.class
             );
-            byte[] attrValue = new StringBuffer().append(pubKey).append("/").append(owner).toString().getBytes();
+            byte[] attrValue = new StringBuffer().append(pubKey).append("/").append(owner)
+                .toString().getBytes();
             BigInteger updated = BigInteger.valueOf(System.currentTimeMillis());
             TransactionReceipt transactionReceipt =
                 weIdContract.setAttribute(
-                    weAddress, 
-                    DataToolUtils.stringToByte32Array(attributeKey), 
-                    attrValue, 
+                    weAddress,
+                    DataToolUtils.stringToByte32Array(attributeKey),
+                    attrValue,
                     updated
                 ).send();
-            
+
             TransactionInfo info = new TransactionInfo(transactionReceipt);
             List<WeIdAttributeChangedEventResponse> response =
                 weIdContract.getWeIdAttributeChangedEvents(transactionReceipt);
@@ -694,10 +695,10 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
                     privateKey,
                     WeIdContract.class);
                 String attrKey = new StringBuffer()
-                	.append(WeIdConstant.WEID_DOC_SERVICE_PREFIX)
-                	.append("/")
-                	.append(serviceType)
-                	.toString(); 
+                    .append(WeIdConstant.WEID_DOC_SERVICE_PREFIX)
+                    .append("/")
+                    .append(serviceType)
+                    .toString();
                 TransactionReceipt receipt =
                     weIdContract.setAttribute(
                         WeIdUtils.convertWeIdToAddress(weId),
@@ -771,7 +772,7 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
                     weIdContractAddress,
                     privateKey,
                     WeIdContract.class);
-                
+
                 byte[] attrValue = new StringBuffer()
                     .append(setAuthenticationArgs.getPublicKey())
                     .append("/")
@@ -825,7 +826,7 @@ public class WeIdServiceImpl extends BaseService implements WeIdService {
             return new ResponseData<>(false, ErrorCode.WEID_INVALID);
         }
         try {
-        	boolean isExist = weIdContract
+            boolean isExist = weIdContract
                 .isIdentityExist(WeIdUtils.convertWeIdToAddress(weId)).send().booleanValue();
             return new ResponseData<>(isExist, ErrorCode.SUCCESS);
         } catch (Exception e) {

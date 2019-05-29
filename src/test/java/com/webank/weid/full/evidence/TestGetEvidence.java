@@ -82,7 +82,7 @@ public class TestGetEvidence extends TestBaseServcie {
      */
     @Test
     public void testGetEvidenceCase2() {
-        
+
         ResponseData<EvidenceInfo> responseData = evidenceService.getEvidence(null);
         logger.info("testGetEvidenceCase2 result :" + responseData);
         Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(),
@@ -137,13 +137,12 @@ public class TestGetEvidence extends TestBaseServcie {
     @Test
     public void testGetEvidenceCase8() {
 
-        MockUp<Evidence> mockTest
-            = new MockUp<Evidence>() {
-                @Mock
-                public Future<?> getInfo() {
-                    return null;
-                }
-            };
+        MockUp<Evidence> mockTest = new MockUp<Evidence>() {
+            @Mock
+            public Future<?> getInfo() {
+                return null;
+            }
+        };
         ResponseData<EvidenceInfo> responseData = evidenceService
             .getEvidence(evidenceAddress);
         logger.info("testGetEvidenceCase8 result :" + responseData);
@@ -156,13 +155,12 @@ public class TestGetEvidence extends TestBaseServcie {
 
     private MockUp<Evidence> getEvidence(
         MockUp<Future<?>> mockFuture) {
-        MockUp<Evidence> mockTest
-            = new MockUp<Evidence>() {
-                @Mock
-                public Future<?> getInfo() {
-                    return mockFuture.getMockInstance();
-                }
-            };
+        MockUp<Evidence> mockTest = new MockUp<Evidence>() {
+            @Mock
+            public Future<?> getInfo() {
+                return mockFuture.getMockInstance();
+            }
+        };
         return mockTest;
     }
 

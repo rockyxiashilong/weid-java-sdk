@@ -59,31 +59,27 @@ public abstract class BaseTest extends BaseService {
 
     @Autowired
     protected CredentialService credentialService;
-    
+
     @Autowired
     protected EvidenceService evidenceService;
 
 
     /**
-     * the private key of sdk is a BigInteger,which needs to be used
-     * when registering authority.
-     *
+     * the private key of sdk is a BigInteger,which needs to be used when registering authority.
      */
     protected String privateKey;
 
     /**
-     *  initialization some for test.
-     *
+     * initialization some for test.
      */
     @Before
     public void setUp() {
-    	privateKey = TestBaseUtil.readPrivateKeyFromFile("privateKey.txt");
+        privateKey = TestBaseUtil.readPrivateKeyFromFile("privateKey.txt");
         testInit();
     }
 
     /**
-     *  tearDown some for test.
-     *
+     * tearDown some for test.
      */
     @After
     public void tearDown() {
@@ -105,12 +101,13 @@ public abstract class BaseTest extends BaseService {
     }
 
     /**
-     *  get current blockNumber.
+     * get current blockNumber.
+     *
      * @return return blockNumber
      * @throws IOException possible exceptions to sending transactions
      */
     public int getBlockNumber() throws IOException {
-    	BlockNumber response = super.getWeb3j().getBlockNumber().send();
+        BlockNumber response = super.getWeb3j().getBlockNumber().send();
         return response.getBlockNumber().intValue();
     }
 }

@@ -25,14 +25,14 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * proof接口.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public interface IProof {
-    
+
     /**
      * 从proof中获取key对应value.
+     *
      * @param proof proofMap数据
      * @param key 要获取的数据的key
      * @return 返回key的数据

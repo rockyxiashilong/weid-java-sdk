@@ -21,6 +21,8 @@ package com.webank.weid.full.weid;
 
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,22 +40,17 @@ import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.SetServiceArgs;
 import com.webank.weid.protocol.response.ResponseData;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * setService method for testing WeIdService.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestSetService extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestSetService.class);
 
     /**
      * case: set success.
-     *
      */
     @Test
     public void testSetServiceCase1() {
@@ -69,7 +66,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is blank.
-     *
      */
     @Test
     public void testSetServiceCase2() {
@@ -86,7 +82,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is bad format.
-     *
      */
     @Test
     public void testSetServiceCase3() {
@@ -103,7 +98,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is not exists.
-     *
      */
     @Test
     public void testSetServiceCase4() {
@@ -121,7 +115,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: type is null.
-     *
      */
     @Test
     public void testSetServiceCase5() {
@@ -138,7 +131,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: type too long.
-     *
      */
     @Test
     public void testSetServiceCase6() {
@@ -156,7 +148,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: serviceEndpoint is null (or " ").
-     *
      */
     @Test
     public void testSetServiceCase7() {
@@ -173,7 +164,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: userWeIdPrivateKey is null.
-     *
      */
     @Test
     public void testSetServiceCase8() {
@@ -190,7 +180,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: privateKey is null.
-     *
      */
     @Test
     public void testSetServiceCase9() {
@@ -208,7 +197,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: the private key belongs to other WeIdentity DID.
-     *
      */
     @Test
     public void testSetServiceCase10() {
@@ -227,7 +215,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: the private key does not match the current weId.
-     *
      */
     @Test
     public void testSetServiceCase11() {
@@ -245,7 +232,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: privateKey and privateKey of WeIdentity DID do not match.
-     *
      */
     @Test
     public void testSetServiceCase12() {
@@ -265,7 +251,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: other WeIdentity DID.
-     *
      */
     @Test
     public void testSetServiceCase13() {
@@ -282,9 +267,7 @@ public class TestSetService extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation throws an NullPointerException when calling the
-     *       setService method.
-     *
+     * case: Simulation throws an NullPointerException when calling the setService method.
      */
     @Test
     public void testSetServiceCase16() {
@@ -310,7 +293,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: setServiceArgs is null.
-     *
      */
     @Test
     public void testSetServiceCase17() {
@@ -324,7 +306,6 @@ public class TestSetService extends TestBaseServcie {
 
     /**
      * case: private key is invalid.
-     *
      */
     @Test
     public void testSetServiceCase18() {

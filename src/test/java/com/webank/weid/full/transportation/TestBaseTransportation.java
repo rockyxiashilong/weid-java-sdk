@@ -32,27 +32,27 @@ import com.webank.weid.protocol.base.PresentationE;
 public abstract class TestBaseTransportation extends TestBaseServcie {
 
     protected PresentationE getPresentationE() {
-        
+
         List<String> context = new ArrayList<String>();
         context.add("v1");
         context.add("v2");
         PresentationE presentation = new PresentationE();
         presentation.setContext(context);
-        
+
         List<String> types = new ArrayList<String>();
         types.add("type1");
         types.add("type2");
         presentation.setType(types);
-        
+
         Map<String, Object> proof = new HashMap<String, Object>();
         proof.put("key1", "value1");
         proof.put("key2", "value2");
         presentation.setProof(proof);
-        
+
         CredentialPojo credentialPojo = new CredentialPojo();
         credentialPojo.setCptId(123);
         credentialPojo.setClaim(TestBaseUtil.buildCptJsonSchemaData());
-        
+
         List<CredentialPojo> credentialList = new ArrayList<>();
         credentialList.add(credentialPojo);
         presentation.setVerifiableCredential(credentialList);

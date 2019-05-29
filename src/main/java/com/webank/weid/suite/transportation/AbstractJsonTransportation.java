@@ -28,17 +28,18 @@ import com.webank.weid.suite.api.transportation.params.ProtocolProperty;
 
 /**
  * 二维码传输协议抽象类定义.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
-public abstract class AbstractJsonTransportation 
-    extends BaseService 
+public abstract class AbstractJsonTransportation
+    extends BaseService
     implements JsonTransportation {
-    
+
     private List<String> verifierWeIdList;
-    
+
     /**
      * 验证协议配置.
+     *
      * @param protocolProperty 协议配置实体
      */
     protected ErrorCode checkEncodeProperty(ProtocolProperty encodeProperty) {
@@ -50,16 +51,17 @@ public abstract class AbstractJsonTransportation
         }
         return ErrorCode.SUCCESS;
     }
-    
+
     /**
      * 验证wrapper数据.
+     *
      * @param wrapper wrapper数据,作为协议的rawData部分
      */
     protected ErrorCode checkProtocolData(Object obj) {
         if (obj == null) {
             return ErrorCode.TRANSPORTATION_PROTOCOL_DATA_INVALID;
         }
-        return ErrorCode.SUCCESS; 
+        return ErrorCode.SUCCESS;
     }
 
     public List<String> getVerifiers() {

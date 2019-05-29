@@ -26,14 +26,13 @@ import com.webank.weid.suite.entity.EncodeData;
 
 /**
  * 原文编解码处理器.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class OriginalEncodeProcessor implements EncodeProcessor {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(OriginalEncodeProcessor.class);
-    
+
     /**
      * 因为是原文处理，所以不做任何操作.
      */

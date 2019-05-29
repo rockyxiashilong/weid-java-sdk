@@ -21,21 +21,21 @@ package com.webank.weid.suite.api.transportation.params;
 
 /**
  * 编解码配置.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class ProtocolProperty {
-    
+
     /**
      * 协议编解码类型.
      */
     private EncodeType encodeType;
 
-    public EncodeType getEncodeType() {
-        return encodeType;
-    }
-    
     public ProtocolProperty(EncodeType encodeType) {
         this.encodeType = encodeType;
+    }
+
+    public EncodeType getEncodeType() {
+        return encodeType;
     }
 }

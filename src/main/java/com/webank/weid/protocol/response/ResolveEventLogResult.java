@@ -7,11 +7,9 @@ import com.webank.weid.constant.ResolveEventLogStatus;
 @Data
 public class ResolveEventLogResult {
 
-    private ResolveEventLogStatus resultStatus;
-
-    private Integer previousBlock;
-
     private static final int PREVIOUS_BLOCK = -32768;
+    private ResolveEventLogStatus resultStatus;
+    private Integer previousBlock;
 
     /**
      * set value for resultStatus.

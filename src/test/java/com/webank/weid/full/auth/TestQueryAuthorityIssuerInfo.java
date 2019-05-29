@@ -23,6 +23,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 import org.junit.Assert;
@@ -39,9 +41,6 @@ import com.webank.weid.protocol.base.AuthorityIssuer;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * queryAuthorityIssuerInfo method for testing AuthorityIssuerService.
@@ -185,7 +184,7 @@ public class TestQueryAuthorityIssuerInfo extends TestBaseServcie {
 
         MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
             @Mock
-            public RemoteCall<Tuple2<List<byte[]>, 
+            public RemoteCall<Tuple2<List<byte[]>,
                 List<BigInteger>>> getAuthorityIssuerInfoNonAccValue(String addr) {
                 return null;
             }
@@ -206,7 +205,7 @@ public class TestQueryAuthorityIssuerInfo extends TestBaseServcie {
 
         MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
             @Mock
-            public RemoteCall<Tuple2<List<byte[]>, List<BigInteger>>> 
+            public RemoteCall<Tuple2<List<byte[]>, List<BigInteger>>>
                 getAuthorityIssuerInfoNonAccValue(String addr) {
                 return null;
             }

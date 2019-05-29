@@ -12,13 +12,14 @@ import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.suite.persistence.driver.MysqlDriver;
 
 public interface MockMysqlDriver {
+
     /**
      * mock DB for storage data.
      */
     public static final Map<String, String> mockDbMap = new HashMap<String, String>();
-    
+
     public static final String ISMOCKKEY = "isMock";
-    
+
     /**
      * the default method for mock mySqlDriver.
      */
@@ -33,7 +34,7 @@ public interface MockMysqlDriver {
                 mockDbMap.put(id, data);
                 return new ResponseData<Integer>(1, ErrorCode.SUCCESS);
             }
-            
+
             @Mock
             public ResponseData<String> get(String domain, String id) {
                 return new ResponseData<String>(mockDbMap.get(id), ErrorCode.SUCCESS);
@@ -41,5 +42,5 @@ public interface MockMysqlDriver {
         };
         mockDbMap.put(ISMOCKKEY, ISMOCKKEY);
     }
-    
+
 }

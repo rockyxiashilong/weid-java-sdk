@@ -22,6 +22,8 @@ package com.webank.weid.full.auth;
 import java.util.ArrayList;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
@@ -44,9 +46,6 @@ import com.webank.weid.rpc.RawTransactionService;
 import com.webank.weid.service.impl.RawTransactionServiceImpl;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * registerAuthorityIssuer method for testing AuthorityIssuerService.

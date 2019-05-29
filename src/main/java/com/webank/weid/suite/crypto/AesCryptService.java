@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -39,19 +40,38 @@ import com.webank.weid.suite.entity.CryptType;
 
 /**
  * AES加解密处理类.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class AesCryptService implements CryptService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(CipherEncodeProcessor.class);
-    
+
     private static final String KEY_ALGORITHM = CryptType.AES.name();
-    
-    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding"; 
-    
+
+    private static final String DEFAULT_CIPHER_ALGORITHM = "AES/ECB/PKCS5Padding";
+
     private static final int KEY_LEN = 128;
-    
+
+    /**
+     * 根据秘钥获取秘钥对象.
+     *
+     * @param password 秘钥字符串
+     * @return 返回秘钥对象
+     * @throws NoSuchAlgorithmException 不存在的Algorithm异常
+     * @throws UnsupportedEncodingException 不支持的encode异常
+     */
+    private static SecretKeySpec getSecretKey(
+        final String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
+
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+        random.setSeed(password.getBytes(StandardCharsets.UTF_8.toString()));
+        kg.init(KEY_LEN, random);
+        SecretKey secretKey = kg.generateKey();
+        return new SecretKeySpec(secretKey.getEncoded(), KEY_ALGORITHM);
+    }
+
     @Override
     public String encrypt(String content, String password) throws EncodeSuiteException {
         try {
@@ -63,9 +83,9 @@ public class AesCryptService implements CryptService {
         } catch (GeneralSecurityException | UnsupportedEncodingException e) {
             logger.error("AES encrypt error, please check the log.", e);
             throw new EncodeSuiteException();
-        } 
+        }
     }
-    
+
     @Override
     public String decrypt(String content, String password) throws EncodeSuiteException {
         try {
@@ -76,24 +96,6 @@ public class AesCryptService implements CryptService {
         } catch (GeneralSecurityException | UnsupportedEncodingException e) {
             logger.error("AES decrypt error, please check the log.", e);
             throw new EncodeSuiteException();
-        } 
-    }
-    
-    /**
-     * 根据秘钥获取秘钥对象.
-     * @param password 秘钥字符串
-     * @return 返回秘钥对象
-     * @throws NoSuchAlgorithmException 不存在的Algorithm异常
-     * @throws UnsupportedEncodingException 不支持的encode异常
-     */
-    private static SecretKeySpec getSecretKey(
-        final String password) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        KeyGenerator kg = KeyGenerator.getInstance(KEY_ALGORITHM);
-        
-        SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed(password.getBytes(StandardCharsets.UTF_8.toString()));
-        kg.init(KEY_LEN, random);
-        SecretKey secretKey = kg.generateKey();
-        return new SecretKeySpec(secretKey.getEncoded(), KEY_ALGORITHM);
+        }
     }
 }

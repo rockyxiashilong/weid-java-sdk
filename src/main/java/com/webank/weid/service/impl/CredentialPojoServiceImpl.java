@@ -42,7 +42,7 @@ import com.webank.weid.util.WeIdUtils;
 
 /**
  * Service implementations for operations on Credential.
- * 
+ *
  * @author tonychen 2019年4月17日
  */
 @Component
@@ -174,7 +174,7 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
     @Override
     public ResponseData<CredentialPojo> createCredential(CreateCredentialPojoArgs args) {
 
-        try { 
+        try {
             CredentialPojo result = new CredentialPojo();
             String context = CredentialUtils.getDefaultCredentialContext();
             result.setContext(context);
@@ -187,11 +187,11 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
             Object claimObject = args.getClaim();
             String claimStr = null;
             if (!(claimObject instanceof String)) {
-                claimStr = DataToolUtils.serialize(claimObject); 
+                claimStr = DataToolUtils.serialize(claimObject);
             } else {
-                claimStr = (String)claimObject;
+                claimStr = (String) claimObject;
             }
-            
+
             HashMap<String, Object> claimMap = DataToolUtils.deserialize(claimStr, HashMap.class);
             result.setClaim(claimMap);
 
@@ -204,11 +204,11 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
             String signature = DataToolUtils.sign(rawData, privateKey);
 
             result.putProofValue(ParamKeyConstant.PROOF_CREATED, result.getIssuanceDate());
-            
+
             String weIdPublicKeyId = args.getWeIdAuthentication().getWeIdPublicKeyId();
             result.putProofValue(ParamKeyConstant.PROOF_CREATOR, weIdPublicKeyId);
-            
-            String  proofType = CredentialProofType.ECDSA.getTypeName();
+
+            String proofType = CredentialProofType.ECDSA.getTypeName();
             result.putProofValue(ParamKeyConstant.PROOF_TYPE, proofType);
             result.putProofValue(ParamKeyConstant.PROOF_SIGNATURE, signature);
             result.setSalt(saltMap);
@@ -227,7 +227,7 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
 
     /* (non-Javadoc)
      * @see com.webank.weid.rpc.CredentialPojoService#createSelectiveCredential(
-     *          com.webank.weid.protocol.base.CredentialPojo, 
+     *          com.webank.weid.protocol.base.CredentialPojo,
      *          com.webank.weid.protocol.base.ClaimPolicy
      *      )
      */
@@ -270,7 +270,7 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
 
     /* (non-Javadoc)
      * @see com.webank.weid.rpc.CredentialPojoService#verify(
-     *          java.lang.String, 
+     *          java.lang.String,
      *          com.webank.weid.protocol.base.CredentialPojo
      *      )
      */
@@ -292,9 +292,9 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
 
     /* (non-Javadoc)
      * @see com.webank.weid.rpc.CredentialPojoService#verify(
-     *          java.lang.String, 
-     *          com.webank.weid.protocol.base.PresentationPolicyE, 
-     *           com.webank.weid.protocol.base.Challenge, 
+     *          java.lang.String,
+     *          com.webank.weid.protocol.base.PresentationPolicyE,
+     *           com.webank.weid.protocol.base.Challenge,
      *           com.webank.weid.protocol.base.PresentationE
      *       )
      */
@@ -437,7 +437,7 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
                     && !disclosureV.equals(
                     CredentialFieldDisclosureValue.DISCLOSED.getStatus())) {
                     logger.error(
-                        "[verifyDisclosureAndSalt] policy disclosureValue {} illegal.", 
+                        "[verifyDisclosureAndSalt] policy disclosureValue {} illegal.",
                         disclosureMap
                     );
                     return ErrorCode.CREDENTIAL_POLICY_DISCLOSUREVALUE_ILLEGAL;
@@ -483,7 +483,7 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
         PresentationE presentation = new PresentationE();
         try {
             // 检查输入数据完整性
-            ErrorCode errorCode = 
+            ErrorCode errorCode =
                 validateCreateArgs(
                     credentialList,
                     presentationPolicyE,
@@ -599,16 +599,16 @@ public class CredentialPojoServiceImpl extends BaseService implements Credential
 
         String proofType = CredentialProofType.ECDSA.getTypeName();
         presentation.putProofValue(ParamKeyConstant.PROOF_TYPE, proofType);
-        
+
         Long proofCreated = DateUtils.getCurrentTimeStamp();
         presentation.putProofValue(ParamKeyConstant.PROOF_CREATED, proofCreated);
-        
+
         String weIdPublicKeyId = weIdAuthentication.getWeIdPublicKeyId();
         presentation.putProofValue(ParamKeyConstant.PROOF_VERIFICATION_METHOD, weIdPublicKeyId);
         presentation.putProofValue(ParamKeyConstant.PROOF_NONCE, challenge.getNonce());
-        String signature = 
+        String signature =
             DataToolUtils.sign(
-                presentation.toRawData(), 
+                presentation.toRawData(),
                 weIdAuthentication.getWeIdPrivateKey().getPrivateKey()
             );
         presentation.putProofValue(ParamKeyConstant.PROOF_SIGNATURE, signature);

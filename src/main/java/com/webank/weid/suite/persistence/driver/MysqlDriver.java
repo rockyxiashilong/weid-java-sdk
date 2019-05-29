@@ -84,11 +84,11 @@ public class MysqlDriver implements Persistence {
     public void init() {
 
         try {
-            
+
             String dbUrl = PropertyUtils.getProperty(DataDriverConstant.JDBC_URL);
             String userName = PropertyUtils.getProperty(DataDriverConstant.JDBC_USER_NAME);
             String passWord = PropertyUtils.getProperty(DataDriverConstant.JDBC_USER_PASSWORD);
-            
+
             // 1. initialize mysql jdbc driver
             Class.forName("com.mysql.jdbc.Driver");
 
@@ -107,7 +107,7 @@ public class MysqlDriver implements Persistence {
 
         if (StringUtils.isEmpty(id)) {
             logger.error("[mysql->get] the id of the data is empty.");
-            return 
+            return
                 new ResponseData<String>(
                     StringUtils.EMPTY,
                     ErrorCode.PRESISTENCE_DATA_KEY_INVALID

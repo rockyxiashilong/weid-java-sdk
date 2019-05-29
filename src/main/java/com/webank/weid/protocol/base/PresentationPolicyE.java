@@ -22,17 +22,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
 import com.webank.weid.constant.CredentialConstant;
 import com.webank.weid.protocol.inf.JsonSerializer;
 import com.webank.weid.util.DataToolUtils;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 /**
  * The base data structure to handle Credential info.
@@ -42,7 +41,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PresentationPolicyE extends Version implements JsonSerializer {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PresentationPolicyE.class);
 
     /**
@@ -77,9 +76,9 @@ public class PresentationPolicyE extends Version implements JsonSerializer {
     }
 
     /**
-     * create the PresentationPolicyE with policyId, please make sure the JSON file in your 
+     * create the PresentationPolicyE with policyId, please make sure the JSON file in your
      * classPath and the name with the policyId.
-     * 
+     *
      * @param policyId the policyId
      * @return the PresentationPolicyE
      */
@@ -94,19 +93,19 @@ public class PresentationPolicyE extends Version implements JsonSerializer {
                 return policy;
             }
             //将Json转换成Map
-            HashMap<String, Object> policyMap = 
+            HashMap<String, Object> policyMap =
                 DataToolUtils.deserialize(jsonNode.toString(), HashMap.class);
             //获取policyJson中的policy 转换成Map
-            HashMap<Integer, Object> claimMap = 
-                (HashMap<Integer, Object>)policyMap.get(CredentialConstant.CLAIM_POLICY_FIELD);
+            HashMap<Integer, Object> claimMap =
+                (HashMap<Integer, Object>) policyMap.get(CredentialConstant.CLAIM_POLICY_FIELD);
             //遍历claimMap
             Iterator<Integer> it = claimMap.keySet().iterator();
             while (it.hasNext()) {
                 //得到每一个claim
-                HashMap<String, Object> claim = (HashMap<String, Object>)claimMap.get(it.next());
+                HashMap<String, Object> claim = (HashMap<String, Object>) claimMap.get(it.next());
                 //得到fieldsToBeDisclosed转换成Map
-                HashMap<String, Object> disclosedMap = 
-                    (HashMap<String, Object>)claim.get(
+                HashMap<String, Object> disclosedMap =
+                    (HashMap<String, Object>) claim.get(
                         CredentialConstant.CLAIM_POLICY_DISCLOSED_FIELD
                     );
                 //覆盖原来的fieldsToBeDisclosed为字符串

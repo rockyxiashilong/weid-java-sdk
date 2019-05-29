@@ -20,27 +20,19 @@
 package com.webank.weid.suite.entity;
 
 public enum QrCodeVersion {
-    
+
     V1(1);
-    
+
     private int code;
-    
+
     QrCodeVersion(int code) {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-    
-    public String toString() {
-        return String.valueOf(this.code);
-    }
-    
     /**
      * get MetaVersion by code.
+     *
      * @param value code value
-     * @return
      */
     public static QrCodeVersion getObject(String value) {
         for (QrCodeVersion version : QrCodeVersion.values()) {
@@ -49,5 +41,13 @@ public enum QrCodeVersion {
             }
         }
         return null;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String toString() {
+        return String.valueOf(this.code);
     }
 }

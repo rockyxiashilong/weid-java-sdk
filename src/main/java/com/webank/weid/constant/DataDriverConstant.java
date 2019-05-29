@@ -21,7 +21,7 @@ package com.webank.weid.constant;
 
 /**
  * constant for DataDriver.
- * 
+ *
  * @author tonychen 2019年3月25日
  */
 public final class DataDriverConstant {

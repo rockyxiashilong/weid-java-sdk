@@ -32,6 +32,9 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
@@ -51,9 +54,6 @@ import org.fisco.bcos.web3j.protocol.exceptions.TransactionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.JsonSchemaConstant;
 import com.webank.weid.constant.ParamKeyConstant;
@@ -91,7 +91,6 @@ public class TransactionUtils {
         if (web3j == null || StringUtils.isEmpty(transactionHex)) {
             return null;
         }
-//        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(transactionHex)
         SendTransaction ethSendTransaction = web3j.sendRawTransaction(transactionHex)
             .sendAsync().get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
         if (ethSendTransaction.hasError()) {
@@ -339,7 +338,7 @@ public class TransactionUtils {
      */
     private static Optional<TransactionReceipt> getTransactionReceiptRequest(Web3j web3j,
         String transactionHash) throws Exception {
-    	BcosTransactionReceipt transactionReceipt =
+        BcosTransactionReceipt transactionReceipt =
             web3j.getTransactionReceipt(transactionHash).send();
         if (transactionReceipt.hasError()) {
             logger.error("Error processing transaction request: "
@@ -445,7 +444,7 @@ public class TransactionUtils {
         if (retCode.intValue()
             == ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX.getCode()) {
             logger.error("[getResultByResolveEvent] cptId limited max value. cptId:{}",
-            		retCode.intValue());
+                retCode.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX, info);
         }
 

@@ -151,7 +151,7 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             ).send();
 
             List<CreateEvidenceLogEventResponse> eventResponseList =
-            	   evidenceFactory.getCreateEvidenceLogEvents(receipt);
+                evidenceFactory.getCreateEvidenceLogEvents(receipt);
             CreateEvidenceLogEventResponse event = eventResponseList.get(0);
             TransactionInfo info = new TransactionInfo(receipt);
             if (event != null) {
@@ -191,13 +191,13 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
 
         try {
             Tuple6<
-        	    List<byte[]>,
-        	    List<String>,
-        	    List<byte[]>,
-        	    List<byte[]>,
-        	    List<BigInteger>,
-        	    List<byte[]>
-        	> rawResult = evidence.getInfo().send();
+                List<byte[]>,
+                List<String>,
+                List<byte[]>,
+                List<byte[]>,
+                List<BigInteger>,
+                List<byte[]>
+                > rawResult = evidence.getInfo().send();
             if (rawResult == null) {
                 return new ResponseData<>(null, ErrorCode.CREDENTIAL_EVIDENCE_BASE_ERROR);
             }
@@ -207,8 +207,8 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
 
             EvidenceInfo evidenceInfoData = new EvidenceInfo();
             evidenceInfoData.setCredentialHash(
-                    WeIdConstant.HEX_PREFIX + new String(credentialHashList.get(0))
-                        + new String(credentialHashList.get(1)));
+                WeIdConstant.HEX_PREFIX + new String(credentialHashList.get(0))
+                    + new String(credentialHashList.get(1)));
 
             List<String> signerStringList = new ArrayList<>();
             for (String addr : issuerList) {
@@ -246,7 +246,7 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
             return new ResponseData<>(null, ErrorCode.CREDENTIAL_EVIDENCE_BASE_ERROR);
         }
     }
-    
+
     /**
      * Verify a Credential based on its Evidence info. A Credential might contain multiple evidence
      * addresses. Anyone successfully verified will lead to a true outcome.
@@ -325,7 +325,6 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
         if (event.retCode == null || event.addr == null) {
             return ErrorCode.ILLEGAL_INPUT;
         }
-//        Integer eventRetCode = event.retCode.getValue().intValue();
         Integer eventRetCode = event.retCode.intValue();
         if (eventRetCode
             .equals(ErrorCode.CREDENTIAL_EVIDENCE_CONTRACT_FAILURE_ILLEAGAL_INPUT.getCode())) {
@@ -336,7 +335,7 @@ public class EvidenceServiceImpl extends BaseService implements EvidenceService 
 
     private ResponseData<Boolean> verifySignatureToSigner(
         String rawData,
-        String signerWeId, 
+        String signerWeId,
         SignatureData signatureData
     ) {
 

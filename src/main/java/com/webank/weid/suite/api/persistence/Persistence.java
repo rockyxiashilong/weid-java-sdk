@@ -58,7 +58,7 @@ public interface Persistence {
 
     /**
      * delete data by id.
-     * 
+     *
      * @param id the key of the data.
      * @return the data you stored.
      */
@@ -66,6 +66,7 @@ public interface Persistence {
 
     /**
      * update data by id.
+     *
      * @param id the key you store with.
      * @param data the data you want to update into.
      * @return execute status of the "update" operation.

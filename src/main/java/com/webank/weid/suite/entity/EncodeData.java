@@ -25,34 +25,35 @@ import lombok.Getter;
 
 /**
  * 编辑码的实体类，封装了需要编解码的数据.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 @Getter
 public class EncodeData {
-    
+
     /**
      * 机构名称.
      */
     private String orgId;
-   
+
     /**
      * 待编解码字符串.
      */
     private String data;
-   
+
     /**
      * 待编解码字符串数据编号.
      */
     private String id;
-    
+
     /**
      * 协议数据指定用户.
      */
     private List<String> verifiers;
-   
+
     /**
      * 构建编解码对象.
+     *
      * @param orgId 协议所属机构
      * @param id 数据编号
      * @param data 需要编解码数据

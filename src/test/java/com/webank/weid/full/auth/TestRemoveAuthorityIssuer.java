@@ -22,6 +22,8 @@ package com.webank.weid.full.auth;
 import java.util.ArrayList;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,9 +40,6 @@ import com.webank.weid.protocol.request.RegisterAuthorityIssuerArgs;
 import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * removeAuthorityIssuer method for testing AuthorityIssuerService.

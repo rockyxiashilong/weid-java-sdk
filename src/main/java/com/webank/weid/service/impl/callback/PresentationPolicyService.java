@@ -7,29 +7,29 @@ import com.webank.weid.service.BaseService;
 import com.webank.weid.service.impl.AmopServiceImpl;
 
 public abstract class PresentationPolicyService extends BaseService {
-    
-    protected AmopService amopService = new AmopServiceImpl();
-    
+
     private static PresentationCallback presentationCallback = new PresentationCallback();
-    
+    protected AmopService amopService = new AmopServiceImpl();
+
     /**
      * 无参构造器,自动注册callback.
      */
     public PresentationPolicyService() {
         presentationCallback.registPolicyService(this);
         amopService.registerCallback(
-            AmopMsgType.GET_POLICY_AND_CHALLENGE.getValue(), 
+            AmopMsgType.GET_POLICY_AND_CHALLENGE.getValue(),
             presentationCallback
         );
     }
 
     /**
      * 获取PolicyAndChallenge.
+     *
      * @param policyId 策略编号
      * @return 返回PresentationPolicyE对象数据
      */
     public abstract PolicyAndChallenge policyAndChallengeOnPush(
-        String policyId, 
+        String policyId,
         String targetUserWeId
     );
 }

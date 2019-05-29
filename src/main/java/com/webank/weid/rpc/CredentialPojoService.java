@@ -84,12 +84,11 @@ public interface CredentialPojoService {
 
     /**
      * packing according to original vouchers and disclosure strategies.
-     * 
+     *
      * @param credentialList original credential list
      * @param presentationPolicyE the disclosure strategies.
      * @param challenge used for authentication
      * @param weIdAuthentication owner information
-     * @return
      */
     public ResponseData<PresentationE> createPresentation(
         List<CredentialPojo> credentialList,

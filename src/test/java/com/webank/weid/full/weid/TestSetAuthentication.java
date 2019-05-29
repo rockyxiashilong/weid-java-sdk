@@ -21,6 +21,8 @@ package com.webank.weid.full.weid;
 
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,22 +40,17 @@ import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.SetAuthenticationArgs;
 import com.webank.weid.protocol.response.ResponseData;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * setAuthentication method for testing WeIdService.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestSetAuthentication extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestSetAuthentication.class);
 
     /**
      * case: set success.
-     *
      */
     @Test
     public void testSetAuthenticationCase1() {
@@ -70,7 +67,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is blank.
-     *
      */
     @Test
     public void testSetAuthenticationCase2() {
@@ -88,7 +84,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is bad format.
-     *
      */
     @Test
     public void testSetAuthenticationCase3() {
@@ -106,7 +101,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is not exists.
-     *
      */
     @Test
     public void testSetAuthenticationCase4() {
@@ -125,7 +119,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: publicKey is a new key.
-     *
      */
     @Test
     public void testSetAuthenticationCase6() {
@@ -145,7 +138,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: publicKey is null.
-     *
      */
     @Test
     public void testSetAuthenticationCase7() {
@@ -163,7 +155,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: publicKey is invalid ("xxxxxxxxxx" or "1111111111111").
-     * 
      */
     @Test
     public void testSetAuthenticationCase8() {
@@ -181,7 +172,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: userWeIdPrivateKey is null.
-     *
      */
     @Test
     public void testSetAuthenticationCase9() {
@@ -199,7 +189,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: privateKey is null.
-     *
      */
     @Test
     public void testSetAuthenticationCase10() {
@@ -218,7 +207,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: privateKey is invalid.
-     *
      */
     @Test
     public void testSetAuthenticationCase11() {
@@ -237,7 +225,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: privateKey and privateKey of WeIdentity DID does not match.
-     *
      */
     @Test
     public void testSetAuthenticationCase12() {
@@ -257,7 +244,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: privateKey belongs to the private key of other WeIdentity DID.
-     *
      */
     @Test
     public void testSetAuthenticationCase13() {
@@ -276,7 +262,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: other WeIdentity DID.
-     *
      */
     @Test
     public void testSetAuthenticationCase14() {
@@ -295,7 +280,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: owner is the WeIdentity DID.
-     *
      */
     @Test
     public void testSetAuthenticationCase15() {
@@ -313,7 +297,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: owner is other WeIdentity DID.
-     *
      */
     @Test
     public void testSetAuthenticationCase16() {
@@ -331,7 +314,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: owner is invalid.
-     *
      */
     @Test
     public void testSetAuthenticationCase17() {
@@ -349,8 +331,7 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: Simulation throws an NullPointerException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
+     * getWeIdAttributeChangedEvents method.
      */
     @Test
     public void testSetAuthenticationCase20() {
@@ -377,7 +358,6 @@ public class TestSetAuthentication extends TestBaseServcie {
 
     /**
      * case: setAuthenticationArgs is null.
-     *
      */
     @Test
     public void testSetAuthenticationCase21() {

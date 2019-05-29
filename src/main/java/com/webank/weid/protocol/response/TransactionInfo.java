@@ -21,9 +21,8 @@ package com.webank.weid.protocol.response;
 
 import java.math.BigInteger;
 
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-
 import lombok.Data;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 
 /**
  * The basic transaction information. Caller can further use these information to track the detailed

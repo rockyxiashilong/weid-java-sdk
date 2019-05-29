@@ -11,17 +11,16 @@ import com.webank.weid.rpc.callback.AmopCallback;
 
 /**
  * 用于处理机构根据policyId获取policy的回调.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class PresentationCallback extends AmopCallback {
-    
-    private static final Logger logger = 
-            LoggerFactory.getLogger(PresentationCallback.class);
+
+    private static final Logger logger =
+        LoggerFactory.getLogger(PresentationCallback.class);
 
     private PresentationPolicyService policyService;
-    
+
     @Override
     public GetPolicyAndChallengeResponse onPush(GetPolicyAndChallengeArgs arg) {
         logger.info("PresentationCallback param:{}", arg);
@@ -34,7 +33,7 @@ public class PresentationCallback extends AmopCallback {
         }
         PolicyAndChallenge policyAndChallenge;
         try {
-            policyAndChallenge = 
+            policyAndChallenge =
                 policyService.policyAndChallengeOnPush(arg.getPolicyId(), arg.getTargetUserWeId());
         } catch (Exception e) {
             logger.error("the policy service call fail, please check the error log.", e);

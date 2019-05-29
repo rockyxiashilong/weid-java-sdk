@@ -27,9 +27,8 @@ import com.webank.weid.protocol.amop.base.AmopBaseMsgArgs;
 
 /**
  * the request body for get EncryptKey.
- * 
- * @author tonychen 2019年5月7日.
  *
+ * @author tonychen 2019年5月7日.
  */
 @Getter
 @Setter

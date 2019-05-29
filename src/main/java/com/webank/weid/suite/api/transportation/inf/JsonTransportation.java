@@ -27,15 +27,16 @@ import com.webank.weid.suite.api.transportation.params.ProtocolProperty;
 
 /**
  * 协议的传输接口.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public interface JsonTransportation {
-    
+
     JsonTransportation specify(List<String> verifierWeIdList);
 
     /**
      * 协议传输序列化接口.
+     *
      * @param object 协议存储的实体数据对象
      * @param property 协议的配置对象
      * @return 返回协议字符串数据
@@ -47,6 +48,7 @@ public interface JsonTransportation {
 
     /**
      * 协议反序列化接口.
+     *
      * @param transString JSON格式的协议数据字符串
      * @param clazz 需要转换成的Class类型
      * @return 返回PresentationE对象数据
@@ -55,5 +57,5 @@ public interface JsonTransportation {
         String transString,
         Class<T> clazz
     );
-    
+
 }

@@ -77,14 +77,15 @@ public class CredentialPojo implements IProof {
      * Required: The credential proof data.
      */
     private Map<String, Object> proof;
-    
+
     /**
      * Required: The credential type default is VerifiableCredential.
      */
     private List<String> type;
-    
+
     /**
      * 添加type.
+     *
      * @param typeValue the typeValue
      */
     public void addType(String typeValue) {
@@ -111,7 +112,7 @@ public class CredentialPojo implements IProof {
     public String getProofType() {
         return getValueFromProof(proof, ParamKeyConstant.PROOF_TYPE).toString();
     }
-    
+
     /**
      * Directly extract the salt from credential.
      *
@@ -121,7 +122,7 @@ public class CredentialPojo implements IProof {
         String salt = getValueFromProof(proof, ParamKeyConstant.PROOF_SALT).toString();
         return DataToolUtils.deserialize(salt, new HashMap<String, Object>().getClass());
     }
-    
+
     /**
      * put the salt into proof.
      */
@@ -130,13 +131,14 @@ public class CredentialPojo implements IProof {
     }
 
     /**
-     *  put the key-value into proof.
+     * put the key-value into proof.
+     *
      * @param key the key of proof
      * @param value the value of proof
      */
     public void putProofValue(String key, Object value) {
         if (proof == null) {
-            proof = new HashMap<>(); 
+            proof = new HashMap<>();
         }
         proof.put(key, value);
     }

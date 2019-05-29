@@ -42,33 +42,33 @@ import com.webank.weid.util.DataToolUtils;
 
 /**
  * 二维码传输协议业务处理类.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class QrCodeJsonTransportationImpl
     extends AbstractJsonTransportation
     implements QrCodeTransportation {
 
-    private static final Logger logger = 
+    private static final Logger logger =
         LoggerFactory.getLogger(QrCodeJsonTransportationImpl.class);
-    
+
     private static final QrCodeVersion version = QrCodeVersion.V1;
-    
+
     /**
      * 支持的协议版本配置.
      */
     private static final Map<String, Class<?>> protocol_version_map;
-    
+
     static {
         protocol_version_map = new HashMap<String, Class<?>>();
         protocol_version_map.put(QrCodeVersion.V1.name(), QrCodeVersion1.class);
     }
-    
+
     @Override
     public <T extends JsonSerializer> ResponseData<String> serialize(
-        T object, 
+        T object,
         ProtocolProperty property) {
-        
+
         logger.info(
             "begin to execute QrCodeJsonTransportationImpl serialization, property:{}",
             property
@@ -87,7 +87,7 @@ public class QrCodeJsonTransportationImpl
         }
         try {
             // 根据协议版本生成协议实体对象
-            QrCodeBaseData qrCodeData = 
+            QrCodeBaseData qrCodeData =
                 QrCodeBaseData.newInstance(
                     protocol_version_map.get(version.name())
                 );
@@ -97,7 +97,7 @@ public class QrCodeJsonTransportationImpl
                 fromOrgId
             );
             // 创建编解码实体对象，对此实体中的data编码操作
-            EncodeData encodeData = 
+            EncodeData encodeData =
                 new EncodeData(
                     qrCodeData.getId(),
                     qrCodeData.getOrgId(),
@@ -106,7 +106,7 @@ public class QrCodeJsonTransportationImpl
                 );
             logger.info("encode by {}.", property.getEncodeType().name());
             // 进行编码处理
-            String data = 
+            String data =
                 EncodeProcessorFactory
                     .getEncodeProcessor(qrCodeData.getEncodeType())
                     .encode(encodeData);
@@ -122,23 +122,23 @@ public class QrCodeJsonTransportationImpl
             logger.error("QrCodeJsonTransportationImpl serialization due to unknown error.", e);
             return new ResponseData<String>(StringUtils.EMPTY, ErrorCode.UNKNOW_ERROR);
         }
-    }  
+    }
 
     @Override
     public <T extends JsonSerializer> ResponseData<T> deserialize(
         String transString,
         Class<T> clazz) {
-        
+
         logger.info("begin to execute QrCodeJsonTransportationImpl deserialization.");
         try {
             //解析协议版本
             QrCodeVersion version = QrCodeBaseData.getQrCodeVersion(transString);
             //根据协议版本生成协议实体对象
-            QrCodeBaseData qrCodeData = 
+            QrCodeBaseData qrCodeData =
                 QrCodeBaseData.newInstance(protocol_version_map.get(version.name()));
             //将协议字符串构建成协议对象
             qrCodeData.buildData(transString);
-            EncodeData encodeData = 
+            EncodeData encodeData =
                 new EncodeData(
                     qrCodeData.getId(),
                     qrCodeData.getOrgId(),
@@ -147,7 +147,7 @@ public class QrCodeJsonTransportationImpl
                 );
             logger.info("encode by {}.", qrCodeData.getEncodeType().name());
             //进行解码处理
-            String data = 
+            String data =
                 EncodeProcessorFactory
                     .getEncodeProcessor(qrCodeData.getEncodeType())
                     .decode(encodeData);

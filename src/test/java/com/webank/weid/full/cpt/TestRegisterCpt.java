@@ -24,6 +24,9 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import mockit.Mock;
+import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
@@ -34,7 +37,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.ErrorCode;
@@ -52,9 +54,6 @@ import com.webank.weid.rpc.RawTransactionService;
 import com.webank.weid.service.impl.RawTransactionServiceImpl;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * registerCpt method for testing CptService.
@@ -139,13 +138,13 @@ public class TestRegisterCpt extends TestBaseServcie {
         MockUp<CptController> mockTest = new MockUp<CptController>() {
             @Mock
             public RemoteCall<TransactionReceipt> registerCpt(
-            	String publisher, 
-            	List<BigInteger> intArray, 
-            	List<byte[]> bytes32Array, 
-            	List<byte[]> jsonSchemaArray, 
-            	BigInteger v, 
-            	byte[] r, 
-            	byte[] s) {
+                String publisher,
+                List<BigInteger> intArray,
+                List<byte[]> bytes32Array,
+                List<byte[]> jsonSchemaArray,
+                BigInteger v,
+                byte[] r,
+                byte[] s) {
                 return null;
             }
         };

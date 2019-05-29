@@ -81,7 +81,10 @@ public abstract class BaseService {
         service = context.getBean(Service.class);
     }
 
-
+    /**
+     * 无参构造方法.
+     *
+     */
     public BaseService() {
         if (web3j == null) {
             initWeb3j();
@@ -140,7 +143,7 @@ public abstract class BaseService {
      * @return true, if successful
      */
     private static boolean initCredentials() {
-       
+
         ECKeyPair keyPair = null;
         try {
             keyPair = Keys.createEcKeyPair();
@@ -149,7 +152,7 @@ public abstract class BaseService {
             return false;
         }
         credentials = Credentials.create(keyPair);
-        
+
         if (credentials == null) {
             logger.error("[BaseService] credentials init failed. ");
             return false;
@@ -270,6 +273,12 @@ public abstract class BaseService {
         return (Contract) contract;
     }
 
+    /**
+     * check health.
+     * @param toOrgId toOrgId
+     * @param arg prameters
+     * @return result
+     */
     public ResponseData<AmopNotifyMsgResult> checkDirectRouteMsgHealth(String toOrgId,
         CheckAmopMsgHealthArgs arg) {
 
@@ -307,7 +316,6 @@ public abstract class BaseService {
         request.setToTopic(toOrgId);
         request.setMessageID(getSeq());
 
-//        String msgBody = jsonMapper.toJson(arg);
         String msgBody = DataToolUtils.serialize(arg);
         AmopRequestBody amopRequestBody = new AmopRequestBody();
         amopRequestBody.setMsgType(msgType);

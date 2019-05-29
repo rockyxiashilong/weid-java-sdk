@@ -19,6 +19,8 @@
 
 package com.webank.weid.full.weid;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,22 +33,17 @@ import com.webank.weid.contract.WeIdContract;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.protocol.response.ResponseData;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * isWeIdExist method for testing WeIdService.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestIsWeIdExist extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestIsWeIdExist.class);
 
     /**
      * case: WeIdentity DID is Exist.
-     *
      */
     @Test
     public void testIsWeIdExistCase1() {
@@ -60,7 +57,6 @@ public class TestIsWeIdExist extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is empty.
-     *
      */
     @Test
     public void testIsWeIdExistCase2() {
@@ -74,7 +70,6 @@ public class TestIsWeIdExist extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is invalid.
-     *
      */
     @Test
     public void testIsWeIdExistCase3() {
@@ -88,7 +83,6 @@ public class TestIsWeIdExist extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is Exist.
-     *
      */
     @Test
     public void testIsWeIdExistCase5() {
@@ -101,9 +95,7 @@ public class TestIsWeIdExist extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation throws an NullPointerException when calling the isIdentityExist
-     *       method.
-     *
+     * case: Simulation throws an NullPointerException when calling the isIdentityExist method.
      */
     @Test
     public void testIsWeIdExistCase8() {

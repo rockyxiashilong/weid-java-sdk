@@ -38,8 +38,8 @@ import org.springframework.beans.BeanUtils;
 
 /**
  * debug class for output object information.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class BeanUtil {
 
@@ -82,7 +82,7 @@ public class BeanUtil {
                         + f[i].getName().substring(0, 1).toUpperCase(Locale.getDefault())
                         + f[i].getName().substring(1), new Class[0]);
                     Object left = f[i].getName();
-                    Object right = m.invoke(obj, new Object[] {});
+                    Object right = m.invoke(obj, new Object[]{});
                     formatByType(blank, left, right, beanStr);
                 }
             } catch (NoSuchMethodException ex) {
@@ -160,7 +160,7 @@ public class BeanUtil {
     }
 
     private static boolean isSimpleValueType(Object obj) {
-        
+
         if (obj == null) {
             return false;
         }
@@ -175,7 +175,7 @@ public class BeanUtil {
         Object left,
         Object right,
         StringBuilder beanStr) {
-        
+
         Object leftObj = left;
         if (right == null) {
             beanStr.append(blank)
@@ -247,7 +247,8 @@ public class BeanUtil {
     }
 
     /**
-     *  converting objects into strings.
+     * converting objects into strings.
+     *
      * @param obj objects requiring format conversion
      */
     public static String objToString(Object obj) {

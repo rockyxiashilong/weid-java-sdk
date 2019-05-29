@@ -30,8 +30,7 @@ import com.webank.weid.protocol.response.GetPolicyAndChallengeResponse;
 import com.webank.weid.service.impl.base.AmopCommonArgs;
 
 /**
- * Created by junqizhang on 08/07/2017. 
- * 业务方需要继承DirectRouteCallback，并实现需要实现的方法.
+ * Created by junqizhang on 08/07/2017. 业务方需要继承DirectRouteCallback，并实现需要实现的方法.
  */
 public class AmopCallback implements PushNotifyAllCallback {
 
@@ -51,6 +50,7 @@ public class AmopCallback implements PushNotifyAllCallback {
 
     /**
      * 默认针对TYPE_TRANSPORTATION消息的回调处理.
+     *
      * @param arg AMOP请求参数
      * @return AMOP相应体
      */
@@ -64,6 +64,7 @@ public class AmopCallback implements PushNotifyAllCallback {
 
     /**
      * 默认获取秘钥的回调处理.
+     *
      * @param arg 获取秘钥需要的参数
      * @return 返回秘钥的响应体
      */
@@ -77,6 +78,7 @@ public class AmopCallback implements PushNotifyAllCallback {
 
     /**
      * 默认获取PolicyAndChallenge的回调处理.
+     *
      * @param arg 获取PolicyAndChallenge需要的参数
      * @return 返回PolicyAndChallenge的响应体
      */

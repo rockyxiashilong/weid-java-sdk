@@ -23,28 +23,26 @@ import com.webank.weid.protocol.inf.IResult;
 
 /**
  * the AMOP response.
+ *
  * @author tonychen 2019.04.16
  */
 @Data
 public class AmopResponse implements IResult {
 
     /**
-     * 返回的消息.
-     */
-    private String result;
-
-    /**
      * 业务类型.
      */
     protected String serviceType;
-
-    /**
-     * 错误码.
-     */
-    private Integer errorCode;
-
     /**
      * 错误信息.
      */
     protected String errorMessage;
+    /**
+     * 返回的消息.
+     */
+    private String result;
+    /**
+     * 错误码.
+     */
+    private Integer errorCode;
 }

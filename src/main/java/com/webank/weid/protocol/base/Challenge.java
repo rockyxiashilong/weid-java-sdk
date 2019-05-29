@@ -45,9 +45,12 @@ public class Challenge extends Version implements RawSerializer {
      * include the nonce to prove the ownership of this WeIdentity DID. The relying party should
      * include a random alphanumeric (i.e. nonce) in the challenge, to prevent replay attacks. This
      * is also known as dynamic challenge.
-     *
      */
     private String nonce;
+
+    private Challenge() {
+        this.setVersion(1);
+    }
 
     /**
      * Factory function which can help to create a brand new challenge object.
@@ -75,9 +78,5 @@ public class Challenge extends Version implements RawSerializer {
     @Override
     public String toRawData() {
         return this.nonce;
-    }
-
-    private Challenge() {
-        this.setVersion(1);
     }
 }

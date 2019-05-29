@@ -92,6 +92,15 @@ public class ResponseData<T> {
     }
 
     /**
+     * Instantiates a new Response data based on the error code and error message.
+     */
+    public ResponseData(T result, Integer errorCode, String errorMessage) {
+        this.result = result;
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+    }
+
+    /**
      * set a ErrorCode type errorCode.
      */
     public void setErrorCode(ErrorCode errorCode) {
@@ -99,14 +108,5 @@ public class ResponseData<T> {
             this.errorCode = errorCode.getCode();
             this.errorMessage = errorCode.getCodeDesc();
         }
-    }
-
-    /**
-     * Instantiates a new Response data based on the error code and error message.
-     */
-    public ResponseData(T result, Integer errorCode, String errorMessage) {
-        this.result = result;
-        this.errorCode = errorCode;
-        this.errorMessage = errorMessage;
     }
 }

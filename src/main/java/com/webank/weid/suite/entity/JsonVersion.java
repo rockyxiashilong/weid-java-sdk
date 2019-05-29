@@ -21,23 +21,19 @@ package com.webank.weid.suite.entity;
 
 /**
  * JSON传输协议枚举.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public enum JsonVersion {
 
     V1(1);
-    
+
     private int code;
 
     JsonVersion(int code) {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-    
     /**
      * get JsonVersion By code.
      *
@@ -50,5 +46,9 @@ public enum JsonVersion {
             }
         }
         return null;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

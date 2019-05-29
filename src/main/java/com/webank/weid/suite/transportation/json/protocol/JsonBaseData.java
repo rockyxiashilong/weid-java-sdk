@@ -24,33 +24,33 @@ import lombok.Setter;
 
 /**
  * JSON协议实体.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 @Getter
 @Setter
-public class JsonBaseData {  
-    
+public class JsonBaseData {
+
     /**
      * JSON协议版本.
      */
     private int version;
-    
+
     /**
      * JSON协议编解码方式.
      */
     private int encodeType;
-    
+
     /**
      * user agent的机构ID.
      */
     private String orgId;
-    
+
     /**
      * 协议数据Id.
      */
     private String id;
-    
+
     /**
      * 协议数据体.
      */
@@ -60,5 +60,5 @@ public class JsonBaseData {
      * 协议通讯类型.
      */
     private String type = "AMOP";
-    
+
 }
