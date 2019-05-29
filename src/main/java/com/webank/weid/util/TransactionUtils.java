@@ -32,29 +32,28 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Splitter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.DynamicBytes;
-import org.bcos.web3j.abi.datatypes.StaticArray;
-import org.bcos.web3j.abi.datatypes.Type;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Int256;
-import org.bcos.web3j.abi.datatypes.generated.Uint256;
-import org.bcos.web3j.protocol.Web3j;
-import org.bcos.web3j.protocol.core.DefaultBlockParameterNumber;
-import org.bcos.web3j.protocol.core.methods.response.EthBlock;
-import org.bcos.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.bcos.web3j.protocol.core.methods.response.EthSendTransaction;
-import org.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.bcos.web3j.protocol.exceptions.TransactionTimeoutException;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
+import org.fisco.bcos.web3j.abi.datatypes.StaticArray;
+import org.fisco.bcos.web3j.abi.datatypes.Type;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Bytes32;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Int256;
+import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterNumber;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosTransactionReceipt;
+import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.exceptions.TransactionTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.JsonSchemaConstant;
 import com.webank.weid.constant.ParamKeyConstant;
@@ -92,7 +91,8 @@ public class TransactionUtils {
         if (web3j == null || StringUtils.isEmpty(transactionHex)) {
             return null;
         }
-        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(transactionHex)
+//        EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(transactionHex)
+        SendTransaction ethSendTransaction = web3j.sendRawTransaction(transactionHex)
             .sendAsync().get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
         if (ethSendTransaction.hasError()) {
             logger.error("Error processing transaction request: "
@@ -339,8 +339,8 @@ public class TransactionUtils {
      */
     private static Optional<TransactionReceipt> getTransactionReceiptRequest(Web3j web3j,
         String transactionHash) throws Exception {
-        EthGetTransactionReceipt transactionReceipt =
-            web3j.ethGetTransactionReceipt(transactionHash).send();
+    	BcosTransactionReceipt transactionReceipt =
+            web3j.getTransactionReceipt(transactionHash).send();
         if (transactionReceipt.hasError()) {
             logger.error("Error processing transaction request: "
                 + transactionReceipt.getError().getMessage());
@@ -366,7 +366,7 @@ public class TransactionUtils {
      */
     public static BigInteger getBlockLimit() {
         try {
-            return BaseService.getWeb3j().ethBlockNumber().send().getBlockNumber()
+            return BaseService.getWeb3j().getBlockNumber().send().getBlockNumber()
                 .add(new BigInteger(String.valueOf(WeIdConstant.ADDITIVE_BLOCK_HEIGHT)));
         } catch (Exception e) {
             //Send a large enough block limit number
@@ -390,9 +390,10 @@ public class TransactionUtils {
         if (event.addr == null || event.operation == null || event.retCode == null) {
             return ErrorCode.ILLEGAL_INPUT;
         }
-        Integer eventOpcode = event.operation.getValue().intValue();
+
+        Integer eventOpcode = event.operation.intValue();
         if (eventOpcode.equals(opcode)) {
-            Integer eventRetCode = event.retCode.getValue().intValue();
+            Integer eventRetCode = event.retCode.intValue();
             return ErrorCode.getTypeByErrorCode(eventRetCode);
         } else {
             return ErrorCode.AUTHORITY_ISSUER_OPCODE_MISMATCH;
@@ -406,8 +407,9 @@ public class TransactionUtils {
      * @return the ErrorCode
      */
     public static ResponseData<CptBaseInfo> resolveRegisterCptEvents(
-        TransactionReceipt transactionReceipt) {
-        List<RegisterCptRetLogEventResponse> event = CptController.getRegisterCptRetLogEvents(
+        TransactionReceipt transactionReceipt,
+        CptController cptController) {
+        List<RegisterCptRetLogEventResponse> event = cptController.getRegisterCptRetLogEvents(
             transactionReceipt
         );
 
@@ -433,51 +435,49 @@ public class TransactionUtils {
      * @return the result
      */
     public static ResponseData<CptBaseInfo> getResultByResolveEvent(
-        Uint256 retCode,
-        Uint256 cptId,
-        Int256 cptVersion,
+        BigInteger retCode,
+        BigInteger cptId,
+        BigInteger cptVersion,
         TransactionReceipt receipt) {
 
         TransactionInfo info = new TransactionInfo(receipt);
         // register
-        if (DataToolUtils.uint256ToInt(retCode)
+        if (retCode.intValue()
             == ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX.getCode()) {
             logger.error("[getResultByResolveEvent] cptId limited max value. cptId:{}",
-                DataToolUtils.uint256ToInt(cptId));
+            		retCode.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_ID_AUTHORITY_ISSUER_EXCEED_MAX, info);
         }
 
-        if (DataToolUtils.uint256ToInt(retCode) == ErrorCode.CPT_ALREADY_EXIST.getCode()) {
+        if (retCode.intValue() == ErrorCode.CPT_ALREADY_EXIST.getCode()) {
             logger.error("[getResultByResolveEvent] cpt already exists on chain. cptId:{}",
-                DataToolUtils.uint256ToInt(cptId));
+                cptId.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_ALREADY_EXIST, info);
         }
 
-        if (DataToolUtils.uint256ToInt(retCode) == ErrorCode.CPT_NO_PERMISSION.getCode()) {
+        if (retCode.intValue() == ErrorCode.CPT_NO_PERMISSION.getCode()) {
             logger.error("[getResultByResolveEvent] no permission. cptId:{}",
-                DataToolUtils.uint256ToInt(cptId));
+                cptId.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_NO_PERMISSION, info);
         }
 
         // register and update
-        if (DataToolUtils.uint256ToInt(retCode)
-            == ErrorCode.CPT_PUBLISHER_NOT_EXIST.getCode()) {
+        if (retCode.intValue() == ErrorCode.CPT_PUBLISHER_NOT_EXIST.getCode()) {
             logger.error("[getResultByResolveEvent] publisher does not exist. cptId:{}",
-                DataToolUtils.uint256ToInt(cptId));
+                cptId.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_PUBLISHER_NOT_EXIST, info);
         }
 
         // update
-        if (DataToolUtils.uint256ToInt(retCode)
-            == ErrorCode.CPT_NOT_EXISTS.getCode()) {
+        if (retCode.intValue() == ErrorCode.CPT_NOT_EXISTS.getCode()) {
             logger.error("[getResultByResolveEvent] cpt id : {} does not exist.",
-                DataToolUtils.uint256ToInt(cptId));
+                cptId.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_NOT_EXISTS, info);
         }
 
         CptBaseInfo result = new CptBaseInfo();
-        result.setCptId(DataToolUtils.uint256ToInt(cptId));
-        result.setCptVersion(DataToolUtils.int256ToInt(cptVersion));
+        result.setCptId(cptId.intValue());
+        result.setCptVersion(cptVersion.intValue());
 
         ResponseData<CptBaseInfo> responseData = new ResponseData<>(result, ErrorCode.SUCCESS,
             info);
@@ -496,11 +496,11 @@ public class TransactionUtils {
             return null;
         }
         Web3j web3j = BaseService.getWeb3j();
-        EthBlock ethBlock = null;
+        BcosBlock ethBlock = null;
         BigInteger blockNumber = info.getBlockNumber();
         try {
             ethBlock = web3j
-                .ethGetBlockByNumber(new DefaultBlockParameterNumber(blockNumber), true).send();
+                .getBlockByNumber(new DefaultBlockParameterNumber(blockNumber), true).send();
         } catch (IOException e) {
             logger.error("Cannot get a block with number: {}. Error: {}", blockNumber, e);
         }
@@ -524,7 +524,7 @@ public class TransactionUtils {
         return getTransactionFromList(transactionList, info);
     }
 
-    private static List<Transaction> getTransactionListFromBlock(EthBlock ethBlock) {
+    private static List<Transaction> getTransactionListFromBlock(BcosBlock ethBlock) {
         return ethBlock
             .getBlock()
             .getTransactions()

@@ -20,11 +20,8 @@
 package com.webank.weid.full.weid;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -40,6 +37,9 @@ import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.SetServiceArgs;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * setService method for testing WeIdService.
@@ -277,58 +277,6 @@ public class TestSetService extends TestBaseServcie {
         LogUtil.info(logger, "setService", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: Simulation throws an InterruptedException when calling the
-     *       setService method.
-     *
-     */
-    @Test
-    public void testSetServiceCase14() {
-
-        SetServiceArgs setServiceArgs = TestBaseUtil.buildSetServiceArgs(createWeIdResult);
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<Boolean> response = setAttributeForMock(setServiceArgs, mockFuture);
-        LogUtil.info(logger, "setService", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    private ResponseData<Boolean> setAttributeForMock(
-        SetServiceArgs setServiceArgs,
-        MockUp<Future<?>> mockFuture) {
-        
-        MockUp<WeIdContract> mockTest = mockSetAttribute(mockFuture);
-
-        ResponseData<Boolean> response = weIdService.setService(setServiceArgs);
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
-     * case: Simulation throws an TimeoutException when calling the
-     *       setService method.
-     *
-     */
-    @Test
-    public void testSetServiceCase15() {
-
-        SetServiceArgs setServiceArgs = TestBaseUtil.buildSetServiceArgs(createWeIdResult);
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<Boolean> response = setAttributeForMock(setServiceArgs, mockFuture);
-        LogUtil.info(logger, "setService", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
             response.getErrorCode().intValue());
         Assert.assertEquals(false, response.getResult());
     }

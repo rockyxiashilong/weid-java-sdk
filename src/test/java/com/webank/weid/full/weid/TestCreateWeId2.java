@@ -20,13 +20,10 @@
 package com.webank.weid.full.weid;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tx.Contract;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -44,6 +41,9 @@ import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.CreateWeIdArgs;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.service.BaseService;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * a parametric createWeId method for testing WeIdService.
@@ -216,53 +216,6 @@ public class TestCreateWeId2 extends TestBaseServcie {
         mockTest.tearDown();
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(StringUtils.EMPTY, response.getResult());
-    }
-
-    /**
-     * case: Simulation throws an InterruptedException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
-     */
-    @Test
-    public void testCreateWeIdCase10() {
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-        
-        ResponseData<String> response = createWeIdForMock(mockFuture);
-        LogUtil.info(logger, "createWeId", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(StringUtils.EMPTY, response.getResult());
-    }
-
-    private ResponseData<String> createWeIdForMock(MockUp<Future<?>> mockFuture) {
-        
-        MockUp<WeIdContract> mockTest = mockSetAttribute(mockFuture);
-
-        CreateWeIdArgs createWeIdArgs = TestBaseUtil.buildCreateWeIdArgs();
-        ResponseData<String> response = weIdService.createWeId(createWeIdArgs);
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
-     * case: Simulation throws an TimeoutException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
-     */
-    @Test
-    public void testCreateWeIdCase11() {
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<String> response = createWeIdForMock(mockFuture);
-        LogUtil.info(logger, "createWeId", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
             response.getErrorCode().intValue());
         Assert.assertEquals(StringUtils.EMPTY, response.getResult());
     }

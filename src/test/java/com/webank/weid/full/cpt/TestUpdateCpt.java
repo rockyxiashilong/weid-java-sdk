@@ -20,25 +20,20 @@
 package com.webank.weid.full.cpt;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.concurrent.Future;
+import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.StaticArray;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Int256;
-import org.bcos.web3j.abi.datatypes.generated.Uint256;
-import org.bcos.web3j.abi.datatypes.generated.Uint8;
-import org.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.ErrorCode;
@@ -54,6 +49,9 @@ import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * updateCpt method for testing CptService.
@@ -192,15 +190,15 @@ public class TestUpdateCpt extends TestBaseServcie {
 
         MockUp<CptController> mockTest = new MockUp<CptController>() {
             @Mock
-            public Future<TransactionReceipt> updateCpt(
-                Uint256 cptId,
-                Address publisher,
-                StaticArray<Int256> intArray,
-                StaticArray<Bytes32> bytes32Array,
-                StaticArray<Bytes32> jsonSchemaArray,
-                Uint8 v,
-                Bytes32 r,
-                Bytes32 s) {
+            public RemoteCall<TransactionReceipt> updateCpt(
+            	BigInteger cptId, 
+            	String publisher, 
+            	List<BigInteger> intArray, 
+            	List<byte[]> bytes32Array, 
+            	List<byte[]> jsonSchemaArray, 
+            	BigInteger v, 
+            	byte[] r, 
+            	byte[] s) {
                 return null;
             }
         };
@@ -495,71 +493,6 @@ public class TestUpdateCpt extends TestBaseServcie {
 
         ResponseData<Cpt> responseCpt = cptService.queryCpt(cptBaseInfo.getCptId());
         LogUtil.info(logger, "updateCpt", responseCpt);
-    }
-
-    /**
-     * case： mock an InterruptedException.
-     */
-    @Test
-    public void testUpdateCptCase21() {
-
-        CptMapArgs cptMapArgs =
-            TestBaseUtil.buildCptArgs(createWeIdResultWithSetAttr);
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<CptBaseInfo> response = updateCptForMock(cptMapArgs, mockFuture);
-        LogUtil.info(logger, "updateCpt", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
-    }
-
-    private ResponseData<CptBaseInfo> updateCptForMock(
-        CptMapArgs cptMapArgs,
-        MockUp<Future<?>> mockFuture) {
-
-        MockUp<CptController> mockTest = new MockUp<CptController>() {
-            @Mock
-            public Future<?> updateCpt(
-                Uint256 cptId,
-                Address publisher,
-                StaticArray<Int256> intArray,
-                StaticArray<Bytes32> bytes32Array,
-                StaticArray<Bytes32> jsonSchemaArray,
-                Uint8 v,
-                Bytes32 r,
-                Bytes32 s) {
-                return mockFuture.getMockInstance();
-            }
-        };
-
-        ResponseData<CptBaseInfo> response = cptService.updateCpt(
-            cptMapArgs,
-            cptBaseInfo.getCptId());
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
-     * case： mock an TimeoutException.
-     */
-    @Test
-    public void testUpdateCptCase22() {
-
-        CptMapArgs cptMapArgs =
-            TestBaseUtil.buildCptArgs(createWeIdResultWithSetAttr);
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<CptBaseInfo> response = updateCptForMock(cptMapArgs, mockFuture);
-        LogUtil.info(logger, "updateCpt", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertNull(response.getResult());
     }
 
     /**

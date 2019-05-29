@@ -20,11 +20,8 @@
 package com.webank.weid;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
-import org.bcos.contract.tools.ToolConf;
-import org.bcos.web3j.protocol.core.Response;
-import org.bcos.web3j.protocol.core.methods.response.EthBlockNumber;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BlockNumber;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.rpc.AuthorityIssuerService;
 import com.webank.weid.rpc.CptService;
 import com.webank.weid.rpc.CredentialService;
@@ -65,8 +63,6 @@ public abstract class BaseTest extends BaseService {
     @Autowired
     protected EvidenceService evidenceService;
 
-    @Autowired
-    protected ToolConf toolConf;
 
     /**
      * the private key of sdk is a BigInteger,which needs to be used
@@ -81,9 +77,7 @@ public abstract class BaseTest extends BaseService {
      */
     @Before
     public void setUp() {
-
-        privateKey = new BigInteger(toolConf.getPrivKey(), 16).toString();
-
+    	privateKey = TestBaseUtil.readPrivateKeyFromFile("privateKey.txt");
         testInit();
     }
 
@@ -98,7 +92,6 @@ public abstract class BaseTest extends BaseService {
         cptService = null;
         weIdService = null;
         credentialService = null;
-        toolConf = null;
 
         testFinalize();
     }
@@ -117,11 +110,7 @@ public abstract class BaseTest extends BaseService {
      * @throws IOException possible exceptions to sending transactions
      */
     public int getBlockNumber() throws IOException {
-        Response<String> response = super.getWeb3j().ethBlockNumber().send();
-        if (response instanceof EthBlockNumber) {
-            EthBlockNumber ethBlockNumber = (EthBlockNumber)response;
-            return ethBlockNumber.getBlockNumber().intValue();
-        }
-        return 0;
+    	BlockNumber response = super.getWeb3j().getBlockNumber().send();
+        return response.getBlockNumber().intValue();
     }
 }

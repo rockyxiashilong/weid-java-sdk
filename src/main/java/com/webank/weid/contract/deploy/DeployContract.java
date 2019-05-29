@@ -27,19 +27,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.channel.client.Service;
-import org.bcos.contract.tools.ToolConf;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.crypto.Credentials;
-import org.bcos.web3j.crypto.GenCredential;
-import org.bcos.web3j.protocol.Web3j;
-import org.bcos.web3j.protocol.channel.ChannelEthereumService;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.channel.client.Service;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.crypto.gm.GenCredential;
+import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -70,11 +68,6 @@ public class DeployContract {
      * log4j.
      */
     private static final Logger logger = LoggerFactory.getLogger(DeployContract.class);
-
-    /**
-     * The Constant for default deploy contracts timeout.
-     */
-    private static final Integer DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS = 15;
 
     /**
      * The context.
@@ -122,21 +115,35 @@ public class DeployContract {
 
         ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
-        web3j = Web3j.build(channelEthereumService);
+        web3j = Web3j.build(channelEthereumService, service.getGroupId());
         if (web3j == null) {
             logger.error("[BaseService] web3j init failed. ");
             return false;
         }
+        
+//        ECKeyPair keyPair = null;
+//
+//        try {
+//            keyPair = Keys.createEcKeyPair();
+//        } catch (Exception e) {
+//            logger.error("Create weId failed.", e);
+//            return false;
+//        }
 
-        ToolConf toolConf = context.getBean(ToolConf.class);
+//        String publicKey = String.valueOf(keyPair.getPublicKey());
+//        String privateKey = String.valueOf(keyPair.getPrivateKey());
+        
+        //将公私钥输出到output
+//        credentials = Credentials.create(keyPair);
+        credentials = GenCredential.create();      
 
-        logger.info("begin init credentials");
-        credentials = GenCredential.create(toolConf.getPrivKey());
-
-        if (credentials == null) {
-            logger.error("[BaseService] credentials init failed. ");
+        if (null == credentials) {
+            logger.error("[BaseService] credentials init failed.");
             return false;
         }
+
+        String privateKey = credentials.getEcKeyPair().getPrivateKey().toString();
+        writeAddressToFile(privateKey, "privateKey.txt");
 
         return true;
     }
@@ -168,28 +175,47 @@ public class DeployContract {
         deployEvidenceContracts();
     }
 
+    private static String deployRoleControllerContracts() {
+        if (web3j == null) {
+            loadConfig();
+        }
+        RoleController roleController = null;
+        try {
+            roleController =
+                RoleController.deploy(
+                    web3j,
+                    credentials,
+                    new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT)
+                ).send();
+            return roleController.getContractAddress();
+        } catch (Exception e) {
+            logger.error("RoleController deploy exception", e);
+            return StringUtils.EMPTY;
+        }
+    }
+
     private static String deployWeIdContract() {
         if (web3j == null) {
             loadConfig();
         }
-        Future<WeIdContract> f =
-            WeIdContract.deploy(
-                web3j,
-                credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE);
 
-        try {
-            WeIdContract weIdContract =
-                f.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+        WeIdContract weIdContract = null;
+		try {
+			weIdContract = WeIdContract.deploy(
+					web3j, 
+					credentials, 
+					new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT))
+					.send();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return StringUtils.EMPTY;
+		}
+
             String contractAddress = weIdContract.getContractAddress();
             writeAddressToFile(contractAddress, "weIdContract.address");
             return contractAddress;
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("WeIdContract deploy exception", e);
-        }
-        return StringUtils.EMPTY;
+        
     }
 
     private static String deployCptContracts(
@@ -201,63 +227,37 @@ public class DeployContract {
         }
 
         try {
-            Future<CptData> f1 =
+            CptData cptData =
                 CptData.deploy(
                     web3j,
                     credentials,
-                    WeIdConstant.GAS_PRICE,
-                    WeIdConstant.GAS_LIMIT,
-                    WeIdConstant.INILITIAL_VALUE,
-                    new Address(authorityIssuerDataAddress));
-            CptData cptData = f1.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                    new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                    authorityIssuerDataAddress).send();
             String cptDataAddress = cptData.getContractAddress();
 
-            Future<CptController> f2 =
+            CptController cptController =
                 CptController.deploy(
                     web3j,
                     credentials,
-                    WeIdConstant.GAS_PRICE,
-                    WeIdConstant.GAS_LIMIT,
-                    WeIdConstant.INILITIAL_VALUE,
-                    new Address(cptDataAddress),
-                    new Address(weIdContractAddress)
-                );
-            CptController cptController =
-                f2.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                    new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                    cptDataAddress,
+                    weIdContractAddress
+                ).send();
             String cptControllerAddress = cptController.getContractAddress();
             writeAddressToFile(cptControllerAddress, "cptController.address");
 
-            Future<TransactionReceipt> f3 = cptController
-                .setRoleController(new Address(roleControllerAddress));
-            f3.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            TransactionReceipt receipt = 
+            		cptController.setRoleController(roleControllerAddress).send();
+            if (receipt == null) {
+            	logger.error("CptController deploy exception");
+            }
+        } catch (Exception e) {
             logger.error("CptController deploy exception", e);
         }
 
         return StringUtils.EMPTY;
     }
 
-    private static String deployRoleControllerContracts() {
-        if (web3j == null) {
-            loadConfig();
-        }
-
-        try {
-            Future<RoleController> f1 =
-                RoleController.deploy(
-                    web3j,
-                    credentials,
-                    WeIdConstant.GAS_PRICE,
-                    WeIdConstant.GAS_LIMIT,
-                    WeIdConstant.INILITIAL_VALUE);
-            RoleController roleController =
-                f1.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
-            return roleController.getContractAddress();
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("RoleController deploy exception", e);
-            return StringUtils.EMPTY;
-        }
-    }
 
     private static Map<String, String> deployIssuerContracts(String roleControllerAddress) {
         if (web3j == null) {
@@ -265,18 +265,13 @@ public class DeployContract {
         }
         Map<String, String> issuerAddressList = new HashMap<>();
 
-        Future<CommitteeMemberData> f2;
         String committeeMemberDataAddress;
         try {
-            f2 = CommitteeMemberData.deploy(
+            CommitteeMemberData committeeMemberData = CommitteeMemberData.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE,
-                new Address(roleControllerAddress));
-            CommitteeMemberData committeeMemberData =
-                f2.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                roleControllerAddress).send();
             committeeMemberDataAddress = committeeMemberData.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(committeeMemberDataAddress))) {
                 issuerAddressList.put("CommitteeMemberData", committeeMemberDataAddress);
@@ -286,20 +281,15 @@ public class DeployContract {
             return issuerAddressList;
         }
 
-        Future<CommitteeMemberController> f3;
         String committeeMemberControllerAddress;
         try {
-            f3 = CommitteeMemberController.deploy(
+            CommitteeMemberController committeeMemberController = CommitteeMemberController.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE,
-                new Address(committeeMemberDataAddress),
-                new Address(roleControllerAddress)
-            );
-            CommitteeMemberController committeeMemberController =
-                f3.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                committeeMemberDataAddress,
+                roleControllerAddress
+            ).send();
             committeeMemberControllerAddress = committeeMemberController.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(committeeMemberControllerAddress))) {
                 issuerAddressList
@@ -310,19 +300,14 @@ public class DeployContract {
             return issuerAddressList;
         }
 
-        Future<AuthorityIssuerData> f4;
         String authorityIssuerDataAddress;
         try {
-            f4 = AuthorityIssuerData.deploy(
+            AuthorityIssuerData authorityIssuerData = AuthorityIssuerData.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE,
-                new Address(roleControllerAddress)
-            );
-            AuthorityIssuerData authorityIssuerData =
-                f4.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                roleControllerAddress
+            ).send();
             authorityIssuerDataAddress = authorityIssuerData.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(authorityIssuerDataAddress))) {
                 issuerAddressList.put("AuthorityIssuerData", authorityIssuerDataAddress);
@@ -332,19 +317,14 @@ public class DeployContract {
             return issuerAddressList;
         }
 
-        Future<AuthorityIssuerController> f5;
         String authorityIssuerControllerAddress;
         try {
-            f5 = AuthorityIssuerController.deploy(
+            AuthorityIssuerController authorityIssuerController = AuthorityIssuerController.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE,
-                new Address(authorityIssuerDataAddress),
-                new Address(roleControllerAddress));
-            AuthorityIssuerController authorityIssuerController =
-                f5.get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT), 
+                authorityIssuerDataAddress,
+                roleControllerAddress).send();
             authorityIssuerControllerAddress = authorityIssuerController.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(authorityIssuerControllerAddress))) {
                 issuerAddressList
@@ -363,17 +343,11 @@ public class DeployContract {
 
         String specificIssuerDataAddress = StringUtils.EMPTY;
         try {
-            Future<SpecificIssuerData> f6 = SpecificIssuerData.deploy(
+            SpecificIssuerData specificIssuerData = SpecificIssuerData.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE
-            );
-            SpecificIssuerData specificIssuerData = f6.get(
-                DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS,
-                TimeUnit.SECONDS
-            );
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT)
+            ).send();
             specificIssuerDataAddress = specificIssuerData.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(specificIssuerDataAddress))) {
                 issuerAddressList.put("SpecificIssuerData", specificIssuerDataAddress);
@@ -383,19 +357,13 @@ public class DeployContract {
         }
 
         try {
-            Future<SpecificIssuerController> f7 = SpecificIssuerController.deploy(
+            SpecificIssuerController specificIssuerController = SpecificIssuerController.deploy(
                 web3j,
                 credentials,
-                WeIdConstant.GAS_PRICE,
-                WeIdConstant.GAS_LIMIT,
-                WeIdConstant.INILITIAL_VALUE,
-                new Address(specificIssuerDataAddress),
-                new Address(roleControllerAddress)
-            );
-            SpecificIssuerController specificIssuerController = f7.get(
-                DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS,
-                TimeUnit.SECONDS
-            );
+                new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT),
+                specificIssuerDataAddress,
+                roleControllerAddress
+            ).send();
             String specificIssuerControllerAddress = specificIssuerController.getContractAddress();
             if (!WeIdUtils.isEmptyAddress(new Address(specificIssuerControllerAddress))) {
                 issuerAddressList.put("SpecificIssuerController", specificIssuerControllerAddress);
@@ -415,24 +383,22 @@ public class DeployContract {
         if (web3j == null) {
             loadConfig();
         }
-
         try {
-            Future<EvidenceFactory> f =
+            EvidenceFactory evidenceFactory =
                 EvidenceFactory.deploy(
-                    web3j,
-                    credentials,
-                    WeIdConstant.GAS_PRICE,
-                    WeIdConstant.GAS_LIMIT,
-                    WeIdConstant.INILITIAL_VALUE
-                );
-            EvidenceFactory evidenceFactory = f
-                .get(DEFAULT_DEPLOY_CONTRACTS_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
+                		web3j, 
+        				credentials, 
+        				new StaticGasProvider(WeIdConstant.GAS_PRICE, WeIdConstant.GAS_LIMIT)
+                ).send();
             String evidenceFactoryAddress = evidenceFactory.getContractAddress();
             writeAddressToFile(evidenceFactoryAddress, "evidenceController.address");
             return evidenceFactoryAddress;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error("EvidenceFactory deploy exception", e);
-        }
+        } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         return StringUtils.EMPTY;
     }
 

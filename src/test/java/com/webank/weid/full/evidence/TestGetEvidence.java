@@ -105,39 +105,6 @@ public class TestGetEvidence extends TestBaseServcie {
     }
 
     /**
-     * case5: mock exception.
-     */
-    @Test
-    public void testGetEvidenceCase5() {
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-        MockUp<Evidence> mockTest = getEvidence(mockFuture);
-        ResponseData<EvidenceInfo> responseData = evidenceService
-            .getEvidence(evidenceAddress);
-        logger.info("testGetEvidenceCase5 result :" + responseData);
-        mockFuture.tearDown();
-        mockTest.tearDown();
-        Assert.assertEquals(responseData.getErrorCode().intValue(),
-            ErrorCode.TRANSACTION_TIMEOUT.getCode());
-    }
-
-    /**
-     * case6: mock exception.
-     */
-    @Test
-    public void testGetEvidenceCase6() {
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-        MockUp<Evidence> mockTest = getEvidence(mockFuture);
-
-        ResponseData<EvidenceInfo> responseData = evidenceService
-            .getEvidence(evidenceAddress);
-        logger.info("testGetEvidenceCase6 result :" + responseData);
-        mockFuture.tearDown();
-        mockTest.tearDown();
-        Assert.assertEquals(responseData.getErrorCode().intValue(),
-            ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode());
-    }
-
-    /**
      * case7: mock exception.
      */
     @Test

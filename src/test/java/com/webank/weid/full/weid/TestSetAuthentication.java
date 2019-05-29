@@ -20,11 +20,8 @@
 package com.webank.weid.full.weid;
 
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -40,6 +37,9 @@ import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.request.SetAuthenticationArgs;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * setAuthentication method for testing WeIdService.
@@ -344,62 +344,6 @@ public class TestSetAuthentication extends TestBaseServcie {
         LogUtil.info(logger, "setAuthentication", response);
 
         Assert.assertEquals(ErrorCode.WEID_INVALID.getCode(), response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: Simulation throws an InterruptedException when calling the
-     *       setAttribute method.
-     *
-     */
-    @Test
-    public void testSetAuthenticationCase18() {
-
-        SetAuthenticationArgs setAuthenticationArgs =
-            TestBaseUtil.buildSetAuthenticationArgs(createWeIdResult);
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<Boolean> response =
-            setAuthenticationForMock(setAuthenticationArgs, mockFuture);
-        LogUtil.info(logger, "setAuthentication", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    private ResponseData<Boolean> setAuthenticationForMock(
-        SetAuthenticationArgs setAuthenticationArgs,
-        MockUp<Future<?>> mockFuture) {
-        
-        MockUp<WeIdContract> mockTest = mockSetAttribute(mockFuture);
-
-        ResponseData<Boolean> response = weIdService.setAuthentication(setAuthenticationArgs);
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
-     * case: Simulation throws an TimeoutException when calling the
-     *       setAttribute method.
-     *
-     */
-    @Test
-    public void testSetAuthenticationCase19() {
-
-        SetAuthenticationArgs setAuthenticationArgs =
-            TestBaseUtil.buildSetAuthenticationArgs(createWeIdResult);
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<Boolean> response =
-            setAuthenticationForMock(setAuthenticationArgs, mockFuture);
-        LogUtil.info(logger, "setAuthentication", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
         Assert.assertEquals(false, response.getResult());
     }
 

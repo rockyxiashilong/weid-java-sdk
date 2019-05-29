@@ -21,18 +21,11 @@ package com.webank.weid.full.auth;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
-import mockit.Mock;
-import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.DynamicBytes;
-import org.bcos.web3j.abi.datatypes.StaticArray;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Int256;
-import org.bcos.web3j.protocol.core.methods.response.Transaction;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -51,6 +44,9 @@ import com.webank.weid.rpc.RawTransactionService;
 import com.webank.weid.service.impl.RawTransactionServiceImpl;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * registerAuthorityIssuer method for testing AuthorityIssuerService.
@@ -174,7 +170,7 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
         while (response.getErrorCode()
             == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
             String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
+            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name);
             response = authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
         }
         LogUtil.info(logger, "registerAuthorityIssuer", response);
@@ -224,7 +220,7 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
         while (response.getErrorCode()
             == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
             String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
+            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name);
             response = authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
         }
         LogUtil.info(logger, "registerAuthorityIssuer", response);
@@ -250,7 +246,7 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
         while (response.getErrorCode()
             == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
             String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
+            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name);
             response = authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
         }
         LogUtil.info(logger, "registerAuthorityIssuer", response);
@@ -409,69 +405,6 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
     }
 
     /**
-     * case: mock an InterruptedException.
-     */
-    @Test
-    public void testRegisterAuthorityIssuerCase18() {
-
-        RegisterAuthorityIssuerArgs registerAuthorityIssuerArgs =
-            TestBaseUtil.buildRegisterAuthorityIssuerArgs(createWeIdResult, privateKey);
-
-        MockUp<Future<?>> mockFuture = mockInterruptedFuture();
-
-        ResponseData<Boolean> response =
-            registerAuthorityIssuerForMock(registerAuthorityIssuerArgs, mockFuture);
-        LogUtil.info(logger, "registerAuthorityIssuer", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: mock an TimeoutException.
-     */
-    @Test
-    public void testRegisterAuthorityIssuerCase19() {
-
-        RegisterAuthorityIssuerArgs registerAuthorityIssuerArgs =
-            TestBaseUtil.buildRegisterAuthorityIssuerArgs(createWeIdResult, privateKey);
-
-        MockUp<Future<?>> mockFuture = mockTimeoutFuture();
-
-        ResponseData<Boolean> response =
-            registerAuthorityIssuerForMock(registerAuthorityIssuerArgs, mockFuture);
-        LogUtil.info(logger, "registerAuthorityIssuer", response);
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertEquals(false, response.getResult());
-    }
-
-    private ResponseData<Boolean> registerAuthorityIssuerForMock(
-        RegisterAuthorityIssuerArgs registerAuthorityIssuerArgs,
-        MockUp<Future<?>> mockFuture) {
-
-        MockUp<AuthorityIssuerController> mockTest = new MockUp<AuthorityIssuerController>() {
-            @Mock
-            public Future<?> addAuthorityIssuer(
-                Address addr,
-                StaticArray<Bytes32> attribBytes32,
-                StaticArray<Int256> attribInt,
-                DynamicBytes accValue) {
-
-                return mockFuture.getMockInstance();
-            }
-        };
-
-        ResponseData<Boolean> response =
-            authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
-        mockTest.tearDown();
-        mockFuture.tearDown();
-        return response;
-    }
-
-    /**
      * case: mock returns null when invoking the getAuthorityIssuerRetLogEvents.
      */
     @Test
@@ -497,7 +430,7 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
 
         mockTest.tearDown();
 
-        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(),
+        Assert.assertEquals(ErrorCode.AUTHORITY_ISSUER_ERROR.getCode(),
             response.getErrorCode().intValue());
         Assert.assertEquals(false, response.getResult());
     }
@@ -520,19 +453,6 @@ public class TestRegisterAuthorityIssuer extends TestBaseServcie {
         Assert.assertEquals(ErrorCode.AUTHORITY_ISSUER_NAME_ILLEGAL.getCode(),
             response.getErrorCode().intValue());
         Assert.assertEquals(false, response.getResult());
-    }
-
-    /**
-     * case: call transactionhex null - arbitrary.
-     */
-    @Test
-    public void testRegisterAuthorityIssuerCase22() {
-        String hex = StringUtils.EMPTY;
-        RawTransactionService rawTransactionService = new RawTransactionServiceImpl();
-        ResponseData<String> response = rawTransactionService.registerAuthorityIssuer(hex);
-        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(),
-            response.getErrorCode().intValue());
-        Assert.assertTrue(StringUtils.isEmpty(response.getResult()));
     }
 
     /**

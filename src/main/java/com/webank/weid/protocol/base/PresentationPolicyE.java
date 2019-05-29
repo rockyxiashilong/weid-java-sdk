@@ -1,20 +1,18 @@
 /*
- *       Copyright© (2018-2019) WeBank Co., Ltd.
+ * Copyright© (2018-2019) WeBank Co., Ltd.
  *
- *       This file is part of weidentity-java-sdk.
+ * This file is part of weidentity-java-sdk.
  *
- *       weidentity-java-sdk is free software: you can redistribute it and/or modify
- *       it under the terms of the GNU Lesser General Public License as published by
- *       the Free Software Foundation, either version 3 of the License, or
- *       (at your option) any later version.
+ * weidentity-java-sdk is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU Lesser General Public License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
  *
- *       weidentity-java-sdk is distributed in the hope that it will be useful,
- *       but WITHOUT ANY WARRANTY; without even the implied warranty of
- *       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *       GNU Lesser General Public License for more details.
+ * weidentity-java-sdk is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
  *
- *       You should have received a copy of the GNU Lesser General Public License
- *       along with weidentity-java-sdk.  If not, see <https://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public License along with
+ * weidentity-java-sdk. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.webank.weid.protocol.base;
@@ -24,16 +22,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
 import com.webank.weid.constant.CredentialConstant;
 import com.webank.weid.protocol.inf.JsonSerializer;
 import com.webank.weid.util.DataToolUtils;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * The base data structure to handle Credential info.
@@ -78,20 +77,20 @@ public class PresentationPolicyE extends Version implements JsonSerializer {
     }
 
     /**
-     * create the PresentationPolicyE with policyFileName, 
-     * please make sure the JSON file in your classPath.
+     * create the PresentationPolicyE with policyId, please make sure the JSON file in your 
+     * classPath and the name with the policyId.
      * 
-     * @param policyFileName the policyFileName
+     * @param policyId the policyId
      * @return the PresentationPolicyE
      */
     @SuppressWarnings("unchecked")
-    public static PresentationPolicyE create(String policyFileName) {
+    public static PresentationPolicyE create(String policyId) {
         PresentationPolicyE policy = null;
         try {
             //获取policyJson文件 转换成JsonNode
-            JsonNode jsonNode = JsonLoader.fromResource("/" + policyFileName);
+            JsonNode jsonNode = JsonLoader.fromResource("/" + policyId + ".json");
             if (jsonNode == null) {
-                logger.error("can not find the {} file in your classpath.", policyFileName);
+                logger.error("can not find the {}.json file in your classpath.", policyId);
                 return policy;
             }
             //将Json转换成Map

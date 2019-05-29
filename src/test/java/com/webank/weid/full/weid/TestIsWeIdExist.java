@@ -19,13 +19,7 @@
 
 package com.webank.weid.full.weid;
 
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeoutException;
-
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.Bool;
+import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -34,9 +28,11 @@ import org.slf4j.LoggerFactory;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.contract.WeIdContract;
-import com.webank.weid.exception.WeIdBaseException;
 import com.webank.weid.full.TestBaseServcie;
 import com.webank.weid.protocol.response.ResponseData;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * isWeIdExist method for testing WeIdService.
@@ -105,56 +101,6 @@ public class TestIsWeIdExist extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation throws an TimeoutException when calling the isIdentityExist
-     *       method.
-     *
-     */
-    @Test
-    public void testIsWeIdExistCase6() {
-
-        MockUp<WeIdContract> mockTest = new MockUp<WeIdContract>() {
-            @Mock
-            public Future<Bool> isIdentityExist(Address identity) throws TimeoutException {
-                throw new TimeoutException();
-            }
-        };
-
-        ResponseData<Boolean> response1 = weIdService.isWeIdExist(createWeIdResult.getWeId());
-        LogUtil.info(logger, "isWeIdExist", response1);
-
-        mockTest.tearDown();
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_TIMEOUT.getCode(),
-            response1.getErrorCode().intValue());
-        Assert.assertEquals(false, response1.getResult());
-    }
-
-    /**
-     * case: Simulation throws an InterruptedException when calling the isIdentityExist
-     *       method.
-     *
-     */
-    @Test
-    public void testIsWeIdExistCase7() {
-
-        MockUp<WeIdContract> mockTest = new MockUp<WeIdContract>() {
-            @Mock
-            public Future<Bool> isIdentityExist(Address identity) throws InterruptedException {
-                throw new InterruptedException();
-            }
-        };
-
-        ResponseData<Boolean> response1 = weIdService.isWeIdExist(createWeIdResult.getWeId());
-        LogUtil.info(logger, "isWeIdExist", response1);
-
-        mockTest.tearDown();
-
-        Assert.assertEquals(ErrorCode.TRANSACTION_EXECUTE_ERROR.getCode(),
-            response1.getErrorCode().intValue());
-        Assert.assertEquals(false, response1.getResult());
-    }
-
-    /**
      * case: Simulation throws an NullPointerException when calling the isIdentityExist
      *       method.
      *
@@ -164,8 +110,8 @@ public class TestIsWeIdExist extends TestBaseServcie {
 
         MockUp<WeIdContract> mockTest = new MockUp<WeIdContract>() {
             @Mock
-            public Future<Bool> isIdentityExist(Address identity) throws NullPointerException {
-                throw new WeIdBaseException("mock exception");
+            public RemoteCall<Boolean> isIdentityExist(String identity) {
+                return null;
             }
         };
 

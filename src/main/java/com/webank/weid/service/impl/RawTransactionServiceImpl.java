@@ -23,14 +23,16 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.webank.weid.config.ContractConfig;
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.WeIdConstant;
 import com.webank.weid.contract.AuthorityIssuerController;
 import com.webank.weid.contract.AuthorityIssuerController.AuthorityIssuerRetLogEventResponse;
+import com.webank.weid.contract.CptController;
 import com.webank.weid.contract.WeIdContract;
 import com.webank.weid.contract.WeIdContract.WeIdAttributeChangedEventResponse;
 import com.webank.weid.protocol.base.CptBaseInfo;
@@ -49,6 +51,38 @@ import com.webank.weid.util.TransactionUtils;
 public class RawTransactionServiceImpl extends BaseService implements RawTransactionService {
 
     private static final Logger logger = LoggerFactory.getLogger(RawTransactionServiceImpl.class);
+    
+    /**
+     * WeIdentity DID contract object, for calling weIdentity DID contract.
+     */
+    private static WeIdContract weIdContract;
+    
+    /**
+     * WeIdentity DID contract object, for calling weIdentity DID contract.
+     */
+    private static AuthorityIssuerController authorityIssuerController;
+    
+    /**
+     * WeIdentity DID contract object, for calling weIdentity DID contract.
+     */
+    private static CptController cptController;
+    
+    
+    public RawTransactionServiceImpl() {
+        init();
+    }
+
+    private static void init() {
+
+        // initialize the WeIdentity DID contract
+        ContractConfig config = context.getBean(ContractConfig.class);
+        weIdContract = (WeIdContract) getContractService(config.getWeIdAddress(), WeIdContract.class);
+        authorityIssuerController =
+            (AuthorityIssuerController)
+                getContractService(config.getIssuerAddress(), AuthorityIssuerController.class);
+        cptController = (CptController) getContractService(config.getCptAddress(),
+            CptController.class);
+    }
 
     /**
      * Create a WeIdentity DID from the provided public key, with preset transaction hex value.
@@ -66,7 +100,7 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             TransactionReceipt transactionReceipt = TransactionUtils
                 .sendTransaction(getWeb3j(), transactionHex);
             List<WeIdAttributeChangedEventResponse> response =
-                WeIdContract.getWeIdAttributeChangedEvents(transactionReceipt);
+                weIdContract.getWeIdAttributeChangedEvents(transactionReceipt);
             TransactionInfo info = new TransactionInfo(transactionReceipt);
             if (!CollectionUtils.isEmpty(response)) {
                 return new ResponseData<>(Boolean.TRUE.toString(), ErrorCode.SUCCESS, info);
@@ -94,9 +128,9 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             }
             TransactionReceipt transactionReceipt = TransactionUtils
                 .sendTransaction(getWeb3j(), transactionHex);
-
+            
             List<AuthorityIssuerRetLogEventResponse> eventList =
-                AuthorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
+                authorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
             TransactionInfo info = new TransactionInfo(transactionReceipt);
             ErrorCode errorCode = TransactionUtils.verifyAuthorityIssuerRelatedEvent(event,
@@ -124,8 +158,12 @@ public class RawTransactionServiceImpl extends BaseService implements RawTransac
             }
             TransactionReceipt transactionReceipt = TransactionUtils
                 .sendTransaction(getWeb3j(), transactionHex);
-            CptBaseInfo cptBaseInfo = TransactionUtils.resolveRegisterCptEvents(transactionReceipt)
-                .getResult();
+            CptBaseInfo cptBaseInfo = 
+                TransactionUtils.resolveRegisterCptEvents(
+                    transactionReceipt,
+            	    cptController
+                ).getResult();
+            
             TransactionInfo info = new TransactionInfo(transactionReceipt);
             if (cptBaseInfo != null) {
                 return new ResponseData<>(DataToolUtils.objToJsonStrWithNoPretty(cptBaseInfo),

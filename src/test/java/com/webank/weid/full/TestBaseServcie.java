@@ -23,14 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import mockit.Mock;
-import mockit.MockUp;
-import org.bcos.web3j.abi.datatypes.Address;
-import org.bcos.web3j.abi.datatypes.DynamicBytes;
-import org.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.bcos.web3j.abi.datatypes.generated.Int256;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Bytes32;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Int256;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +53,9 @@ import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.util.CredentialUtils;
 import com.webank.weid.util.WeIdUtils;
+
+import mockit.Mock;
+import mockit.MockUp;
 
 /**
  * testing basic method classes.
@@ -287,7 +287,7 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
         while (response.getErrorCode()
             == ErrorCode.AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS.getCode()) {
             String name = registerAuthorityIssuerArgs.getAuthorityIssuer().getName();
-            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name + Math.random());
+            registerAuthorityIssuerArgs.getAuthorityIssuer().setName(name);
             response = authorityIssuerService.registerAuthorityIssuer(registerAuthorityIssuerArgs);
         }
         logger.info("registerAuthorityIssuer result:");
@@ -404,35 +404,6 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
         Assert.assertEquals(true, responseSetAuth.getResult());
     }
 
-    protected MockUp<Future<?>> mockTimeoutFuture() {
-        return new MockUp<Future<?>>() {
-            @Mock
-            public Future<?> get(long timeout, TimeUnit unit)
-                throws TimeoutException {
-
-                throw new TimeoutException();
-            }
-        };
-    }
-
-    protected MockUp<Future<?>> mockInterruptedFuture() {
-        return new MockUp<Future<?>>() {
-            @Mock
-            public Future<?> get(long timeout, TimeUnit unit)
-                throws InterruptedException {
-
-                throw new InterruptedException();
-            }
-
-            @Mock
-            public Future<?> get()
-                throws InterruptedException {
-
-                throw new InterruptedException();
-            }
-        };
-    }
-
     protected MockUp<Future<?>> mockReturnNullFuture() {
         return new MockUp<Future<?>>() {
             @Mock
@@ -465,7 +436,7 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
     }
 
     protected Credential copyCredential(Credential credential) {
-        return CredentialUtils.copyCredential(credential);
+    	return CredentialUtils.copyCredential(credential);
     }
 
     protected CreateWeIdDataResult copyCreateWeId(CreateWeIdDataResult createWeId) {
