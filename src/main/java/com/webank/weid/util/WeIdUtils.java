@@ -159,7 +159,7 @@ public final class WeIdUtils {
     public static boolean isEmptyAddress(Address addr) {
         return addr.getValue().equals(BigInteger.ZERO);
     }
-    
+
     /**
      * check if the given Address is empty.
      *

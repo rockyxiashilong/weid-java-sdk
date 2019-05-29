@@ -22,6 +22,8 @@ package com.webank.weid.full.weid;
 import java.util.ArrayList;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,9 +39,6 @@ import com.webank.weid.full.TestBaseUtil;
 import com.webank.weid.protocol.base.WeIdDocument;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * getWeIdDocument method for testing WeIdService.

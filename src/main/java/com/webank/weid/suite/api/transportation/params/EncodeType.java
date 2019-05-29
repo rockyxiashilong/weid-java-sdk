@@ -21,9 +21,8 @@ package com.webank.weid.suite.api.transportation.params;
 
 /**
  * enumeration of supported coding types.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public enum EncodeType {
 
@@ -31,34 +30,26 @@ public enum EncodeType {
      * The original type.
      */
     ORIGINAL(0),
-    
+
     /**
      * The cipher type.
      */
     CIPHER(1);
-    
+
     /**
      * encode number.
      */
     private int code;
 
-    
+
     EncodeType(int code) {
         this.code = code;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public String toString() {
-        return String.valueOf(this.code);
-    }
-    
     /**
      * get EncodeType by code.
+     *
      * @param value code value
-     * @return
      */
     public static EncodeType getObject(String value) {
         for (EncodeType codeType : EncodeType.values()) {
@@ -67,5 +58,13 @@ public enum EncodeType {
             }
         }
         return null;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String toString() {
+        return String.valueOf(this.code);
     }
 }

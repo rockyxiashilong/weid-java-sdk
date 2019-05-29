@@ -33,14 +33,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
 import com.webank.weid.common.LogUtil;
 import com.webank.weid.common.PasswordKey;
 import com.webank.weid.constant.JsonSchemaConstant;
@@ -61,11 +61,11 @@ import com.webank.weid.protocol.response.CreateWeIdDataResult;
 
 /**
  * testing basic entity object building classes.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestBaseUtil {
+
     /**
      * log4j.
      */
@@ -147,6 +147,7 @@ public class TestBaseUtil {
 
     /**
      * build cpt json schema.
+     *
      * @return HashMap
      */
     public static HashMap<String, Object> buildCptJsonSchema() {
@@ -182,6 +183,7 @@ public class TestBaseUtil {
 
     /**
      * build cpt json schemaData.
+     *
      * @return HashMap
      */
     public static HashMap<String, Object> buildCptJsonSchemaData() {
@@ -197,7 +199,7 @@ public class TestBaseUtil {
      * build default RegisterAuthorityIssuerArgs.
      */
     public static RegisterAuthorityIssuerArgs buildRegisterAuthorityIssuerArgs(
-        CreateWeIdDataResult createWeId, 
+        CreateWeIdDataResult createWeId,
         String privateKey) {
 
         AuthorityIssuer authorityIssuer = new AuthorityIssuer();
@@ -215,7 +217,6 @@ public class TestBaseUtil {
 
     /**
      * build default CreateWeIdArgs.
-     * 
      */
     public static CreateWeIdArgs buildCreateWeIdArgs() {
         CreateWeIdArgs args = new CreateWeIdArgs();
@@ -282,7 +283,7 @@ public class TestBaseUtil {
      * buildRemoveAuthorityIssuerArgs.
      */
     public static RemoveAuthorityIssuerArgs buildRemoveAuthorityIssuerArgs(
-        CreateWeIdDataResult createWeId, 
+        CreateWeIdDataResult createWeId,
         String privateKey) {
 
         RemoveAuthorityIssuerArgs removeAuthorityIssuerArgs = new RemoveAuthorityIssuerArgs();
@@ -295,7 +296,6 @@ public class TestBaseUtil {
 
     /**
      * create a new public key - private key.
-     * 
      */
     public static PasswordKey createEcKeyPair() {
 
@@ -319,12 +319,11 @@ public class TestBaseUtil {
 
     /**
      * to test the public and private key from the file.
-     * 
+     *
      * @param fileName fileName
-     * @return
      */
     public static PasswordKey resolvePk(String fileName) {
-        
+
         BufferedReader br = null;
         FileInputStream fis = null;
         InputStreamReader isr = null;
@@ -350,7 +349,7 @@ public class TestBaseUtil {
             String line = null;
             while ((line = br.readLine()) != null) {
                 strList.add(line);
-            } 
+            }
 
             String[] pk = new String[2];
             for (int i = 0; i < strList.size(); i++) {
@@ -373,20 +372,25 @@ public class TestBaseUtil {
             logger.error("the file is not exists:", e);
         } catch (IOException e) {
             logger.error("resolvePk error:", e);
-        }  finally {
-        	closeStream(br,fis,isr);
+        } finally {
+            closeStream(br, fis, isr);
         }
         return passwordKey;
     }
-    
+
+    /**
+     *  read key form file.
+     * @param fileName filename
+     * @return private key
+     */
     public static String readPrivateKeyFromFile(String fileName) {
-    	
-    	BufferedReader br = null;
+
+        BufferedReader br = null;
         FileInputStream fis = null;
         InputStreamReader isr = null;
         StringBuffer privateKey = new StringBuffer();
-    	
-    	URL fileUrl = TestBaseUtil.class.getClassLoader().getResource(fileName);
+
+        URL fileUrl = TestBaseUtil.class.getClassLoader().getResource(fileName);
         if (fileUrl == null) {
             return privateKey.toString();
         }
@@ -397,25 +401,25 @@ public class TestBaseUtil {
         }
 
         try {
-			fis = new FileInputStream(fileUrl.getFile());
-			isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-			br = new BufferedReader(isr);
-						
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				privateKey.append(line);
-			}
-		} catch (Exception e) {
-			logger.error("read privateKey from {} failed, error:{}",fileName,e);
-		} finally {
-        	closeStream(br,fis,isr);
+            fis = new FileInputStream(fileUrl.getFile());
+            isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+            br = new BufferedReader(isr);
+
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                privateKey.append(line);
+            }
+        } catch (Exception e) {
+            logger.error("read privateKey from {} failed, error:{}", fileName, e);
+        } finally {
+            closeStream(br, fis, isr);
         }
-        
-    	return privateKey.toString();
+
+        return privateKey.toString();
     }
-    
+
     private static void closeStream(BufferedReader br, FileInputStream fis, InputStreamReader isr) {
-    	if (br != null) {
+        if (br != null) {
             try {
                 br.close();
             } catch (IOException e) {
@@ -437,5 +441,5 @@ public class TestBaseUtil {
             }
         }
     }
-    
+
 }

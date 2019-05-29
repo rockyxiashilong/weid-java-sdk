@@ -26,6 +26,7 @@ import com.webank.weid.protocol.amop.base.AmopBaseMsgArgs;
 
 /**
  * AMOP common args.
+ *
  * @author tonychen 2019年4月16日
  */
 @Data

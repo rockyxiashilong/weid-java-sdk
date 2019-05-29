@@ -23,16 +23,17 @@ import com.webank.weid.util.DataToolUtils;
 
 /**
  * 秘钥生成器.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class KeyGenerator {
 
     /**
      * 使用UUID作为秘钥.
+     *
      * @return 返回UUID字符串
      */
     public static String getKey() {
-        return DataToolUtils.getUuId32();   
+        return DataToolUtils.getUuId32();
     }
 }

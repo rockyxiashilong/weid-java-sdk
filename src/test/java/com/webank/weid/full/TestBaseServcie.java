@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Bytes32;
@@ -53,9 +55,6 @@ import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.util.CredentialUtils;
 import com.webank.weid.util.WeIdUtils;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * testing basic method classes.
@@ -417,13 +416,13 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
         return new MockUp<WeIdContract>() {
             @Mock
             public Future<?> createWeId(
-                Address identity, 
+                Address identity,
                 DynamicBytes auth,
-                DynamicBytes created, 
+                DynamicBytes created,
                 Int256 updated) {
                 return mockFuture.getMockInstance();
             }
-            
+
             @Mock
             public Future<?> setAttribute(
                 Address identity,
@@ -436,7 +435,7 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
     }
 
     protected Credential copyCredential(Credential credential) {
-    	return CredentialUtils.copyCredential(credential);
+        return CredentialUtils.copyCredential(credential);
     }
 
     protected CreateWeIdDataResult copyCreateWeId(CreateWeIdDataResult createWeId) {

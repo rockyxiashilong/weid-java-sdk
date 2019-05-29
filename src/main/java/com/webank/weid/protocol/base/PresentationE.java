@@ -51,14 +51,14 @@ public class PresentationE implements RawSerializer, IProof {
 
     /**
      * 获取公钥Id，用于验证的时候识别publicKey.
-     * @return
      */
     public String getVerificationMethod() {
         return getValueFromProof(proof, ParamKeyConstant.PROOF_VERIFICATION_METHOD).toString();
     }
-    
+
     /**
      * 获取challenge随机值.
+     *
      * @return 返回challenge随机值.
      */
     public String getNonce() {
@@ -67,14 +67,16 @@ public class PresentationE implements RawSerializer, IProof {
 
     /**
      * 获取签名值Signature.
+     *
      * @return 返回签名字符串Signature.
      */
     public String getSignature() {
         return getValueFromProof(proof, ParamKeyConstant.PROOF_SIGNATURE).toString();
     }
-    
+
     /**
      * 向proof中添加key-value.
+     *
      * @param key proof中的 key
      * @param value proof中key的value
      */

@@ -27,23 +27,24 @@ import com.webank.weid.suite.entity.CryptType;
 
 /**
  * 秘钥对象工厂, 根据不同类型秘钥得到相应的秘钥处理对象.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class CryptServiceFactory {
-    
+
     /**
      * 支持加密类型的配置Map，目前支持仅支持AES.
      */
     private static final Map<String, CryptService> cryptServiceMap =
         new HashMap<String, CryptService>();
-    
+
     static {
         cryptServiceMap.put(CryptType.AES.name(), new AesCryptService());
     }
 
     /**
      * 通过秘钥枚举类型获取秘钥对象.
+     *
      * @param cryptType 秘钥枚举类型
      * @return 秘钥加解密处理对象
      */

@@ -25,16 +25,16 @@ import com.webank.weid.util.DataToolUtils;
 
 /**
  * 协议版本V1.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class QrCodeVersion1 extends QrCodeBaseData {
 
-    private static final String protocol = 
+    private static final String protocol =
         PROTOCOL_VERSION + "encodeType|orgId|id|data|extendData";
-    
+
     private static final String[] protocols;
-    
+
     static {
         //得到协议模板配置的协议字段
         protocols = protocol.split(PROTOCOL_PARTITION_DIVISION);

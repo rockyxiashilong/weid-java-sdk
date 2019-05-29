@@ -21,6 +21,8 @@ package com.webank.weid.full.evidence;
 
 import java.util.Map;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,9 +36,6 @@ import com.webank.weid.protocol.base.Credential;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.service.impl.EvidenceServiceImpl;
-
-import mockit.Mock;
-import mockit.MockUp;
 
 /**
  * TestVerifyEvidence v_wbpenghu.

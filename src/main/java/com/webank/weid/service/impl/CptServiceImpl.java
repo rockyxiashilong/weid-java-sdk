@@ -172,7 +172,7 @@ public class CptServiceImpl extends BaseService implements CptService {
                 false,
                 cptId
             );
-            return TransactionUtils.resolveRegisterCptEvents(transactionReceipt,cptController);
+            return TransactionUtils.resolveRegisterCptEvents(transactionReceipt, cptController);
         } catch (InterruptedException | ExecutionException e) {
             logger.error(
                 "[registerCpt] register cpt failed due to transaction execution error. ",
@@ -232,15 +232,17 @@ public class CptServiceImpl extends BaseService implements CptService {
      */
     public ResponseData<Cpt> queryCpt(Integer cptId) {
 
-    	try {
+        try {
             if (cptId == null || cptId < 0) {
                 return new ResponseData<>(null, ErrorCode.ILLEGAL_INPUT);
             }
-            Tuple7<String, List<BigInteger>, List<byte[]>, List<byte[]>, BigInteger, byte[], byte[]> valueList = cptController
+            Tuple7<String, List<BigInteger>, List<byte[]>, List<byte[]>,
+                BigInteger, byte[], byte[]> valueList =
+                cptController
                 .queryCpt(new BigInteger(String.valueOf(cptId))).sendAsync()
                 .get(WeIdConstant.TRANSACTION_RECEIPT_TIMEOUT, TimeUnit.SECONDS);
 
-            if (valueList == null ) {
+            if (valueList == null) {
                 logger.error("Query cpt id : {} does not exist, result is null.", cptId);
                 return new ResponseData<>(null, ErrorCode.CPT_NOT_EXISTS);
             }
@@ -256,15 +258,15 @@ public class CptServiceImpl extends BaseService implements CptService {
             );
 
             List<BigInteger> longArray = valueList.getValue2();
-   
+
             cpt.setCptVersion(longArray.get(0).intValue());
             cpt.setCreated(longArray.get(1).longValue());
             cpt.setUpdated(longArray.get(2).longValue());
 
             List<byte[]> jsonSchemaArray = valueList.getValue4();
-                
+
             String jsonSchema = DataToolUtils.byte32ListToString(
-            		jsonSchemaArray, WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH);
+                jsonSchemaArray, WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH);
 
             Map<String, Object> jsonSchemaMap = DataToolUtils
                 .deserialize(jsonSchema.trim(), HashMap.class);
@@ -277,8 +279,8 @@ public class CptServiceImpl extends BaseService implements CptService {
                 .rawSignatureDeserialization(v, r, s);
             String cptSignature =
                 new String(
-                		DataToolUtils.base64Encode(
-                				DataToolUtils.simpleSignatureSerialization(signatureData)),
+                    DataToolUtils.base64Encode(
+                        DataToolUtils.simpleSignatureSerialization(signatureData)),
                     StandardCharsets.UTF_8
                 );
             cpt.setCptSignature(cptSignature);
@@ -330,7 +332,7 @@ public class CptServiceImpl extends BaseService implements CptService {
      */
     public ResponseData<CptBaseInfo> updateCpt(CptMapArgs args, Integer cptId) {
 
-    	try {
+        try {
             if (args == null) {
                 logger.error("[updateCpt]input UpdateCptArgs is null");
                 return new ResponseData<>(null, ErrorCode.ILLEGAL_INPUT);
@@ -364,7 +366,7 @@ public class CptServiceImpl extends BaseService implements CptService {
             }
 
             return this.getResultByResolveEvent(
-            	transactionReceipt,
+                transactionReceipt,
                 event.get(0).retCode,
                 event.get(0).cptId,
                 event.get(0).cptVersion
@@ -374,7 +376,7 @@ public class CptServiceImpl extends BaseService implements CptService {
             return new ResponseData<>(null, ErrorCode.UNKNOW_ERROR);
         }
     }
-    
+
     private TransactionReceipt getTransactionReceipt(
         WeIdAuthentication weIdAuthentication,
         Map<String, Object> cptJsonSchemaMap,
@@ -398,50 +400,50 @@ public class CptServiceImpl extends BaseService implements CptService {
                 BigInteger.valueOf(Long.valueOf(cptId)),
                 WeIdUtils.convertWeIdToAddress(weId),
                 DataToolUtils.listToListBigInteger(
-                    DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH), 
+                    DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH),
                     WeIdConstant.CPT_LONG_ARRAY_LENGTH
                 ),
                 DataToolUtils.bytesArrayListToBytes32ArrayList(
                     byteArray, WeIdConstant.CPT_STRING_ARRAY_LENGTH),
                 DataToolUtils.stringToByte32ArrayList(
-                    cptJsonSchemaNew,WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
+                    cptJsonSchemaNew, WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
                 rsvSignature.getV().getValue(),
                 rsvSignature.getR().getValue(),
                 rsvSignature.getS().getValue()
             ).send();
         } else {
-        	if (cptId == null || cptId == 0) {
+            if (cptId == null || cptId == 0) {
                 // the case to register a CPT with an auto-generated CPT ID
                 return cptController.registerCpt(
                     WeIdUtils.convertWeIdToAddress(weId),
                     DataToolUtils.listToListBigInteger(
-                        DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH), 
-        			    WeIdConstant.CPT_LONG_ARRAY_LENGTH
-        		    ),
-                    DataToolUtils.bytesArrayListToBytes32ArrayList(
-        			    byteArray, 
-        			    WeIdConstant.CPT_STRING_ARRAY_LENGTH
-        		    ),
-                    DataToolUtils.stringToByte32ArrayList(
-                        cptJsonSchemaNew,WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
-                    rsvSignature.getV().getValue(),
-                    rsvSignature.getR().getValue(),
-                    rsvSignature.getS().getValue()
-        			).send();
-            } else {      	
-        	    return cptController.registerCpt(
-        	        BigInteger.valueOf(cptId.longValue()),
-                    WeIdUtils.convertWeIdToAddress(weId),
-                    DataToolUtils.listToListBigInteger(
-                        DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH), 
+                        DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH),
                         WeIdConstant.CPT_LONG_ARRAY_LENGTH
                     ),
                     DataToolUtils.bytesArrayListToBytes32ArrayList(
-                        byteArray, 
+                        byteArray,
                         WeIdConstant.CPT_STRING_ARRAY_LENGTH
                     ),
                     DataToolUtils.stringToByte32ArrayList(
-                        cptJsonSchemaNew,WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
+                        cptJsonSchemaNew, WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
+                    rsvSignature.getV().getValue(),
+                    rsvSignature.getR().getValue(),
+                    rsvSignature.getS().getValue()
+                ).send();
+            } else {
+                return cptController.registerCpt(
+                    BigInteger.valueOf(cptId.longValue()),
+                    WeIdUtils.convertWeIdToAddress(weId),
+                    DataToolUtils.listToListBigInteger(
+                        DataToolUtils.getParamCreatedList(WeIdConstant.CPT_LONG_ARRAY_LENGTH),
+                        WeIdConstant.CPT_LONG_ARRAY_LENGTH
+                    ),
+                    DataToolUtils.bytesArrayListToBytes32ArrayList(
+                        byteArray,
+                        WeIdConstant.CPT_STRING_ARRAY_LENGTH
+                    ),
+                    DataToolUtils.stringToByte32ArrayList(
+                        cptJsonSchemaNew, WeIdConstant.JSON_SCHEMA_ARRAY_LENGTH),
                     rsvSignature.getV().getValue(),
                     rsvSignature.getR().getValue(),
                     rsvSignature.getS().getValue()
@@ -520,7 +522,7 @@ public class CptServiceImpl extends BaseService implements CptService {
         cptJsonSchemaNew.putAll(cptJsonSchema);
         return DataToolUtils.serialize(cptJsonSchemaNew);
     }
-    
+
     private ResponseData<CptBaseInfo> resolveRegisterCptEvents(
         TransactionReceipt transactionReceipt) {
         List<RegisterCptRetLogEventResponse> event = cptController.getRegisterCptRetLogEvents(
@@ -539,14 +541,14 @@ public class CptServiceImpl extends BaseService implements CptService {
             event.get(0).cptVersion
         );
     }
-    
+
     private ResponseData<CptBaseInfo> getResultByResolveEvent(
-    	TransactionReceipt receipt,
+        TransactionReceipt receipt,
         BigInteger retCode,
         BigInteger cptId,
         BigInteger cptVersion) {
-    	
-    	TransactionInfo info = new TransactionInfo(receipt);
+
+        TransactionInfo info = new TransactionInfo(receipt);
 
         // register
         if (retCode.intValue()
@@ -566,7 +568,7 @@ public class CptServiceImpl extends BaseService implements CptService {
                 cptId.intValue());
             return new ResponseData<>(null, ErrorCode.CPT_NO_PERMISSION, info);
         }
-        
+
         // register and update
         if (retCode.intValue()
             == ErrorCode.CPT_PUBLISHER_NOT_EXIST.getCode()) {
@@ -585,7 +587,7 @@ public class CptServiceImpl extends BaseService implements CptService {
         result.setCptId(cptId.intValue());
         result.setCptVersion(cptVersion.intValue());
 
-        ResponseData<CptBaseInfo> responseData = 
+        ResponseData<CptBaseInfo> responseData =
             new ResponseData<>(result, ErrorCode.SUCCESS, info);
         return responseData;
     }

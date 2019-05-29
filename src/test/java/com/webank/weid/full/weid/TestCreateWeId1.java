@@ -22,6 +22,8 @@ package com.webank.weid.full.weid;
 import java.security.NoSuchProviderException;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
@@ -46,22 +48,17 @@ import com.webank.weid.service.impl.RawTransactionServiceImpl;
 import com.webank.weid.util.TransactionUtils;
 import com.webank.weid.util.WeIdUtils;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * non parametric createWeId method for testing WeIdService.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestCreateWeId1 extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestCreateWeId1.class);
 
     /**
      * case: create WeId success.
-     *
      */
     @Test
     public void testCreateWeIdCase1() {
@@ -79,9 +76,7 @@ public class TestCreateWeId1 extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation returns null when invoking the getWeIdAttributeChangedEvents
-     *       method.
-     *
+     * case: Simulation returns null when invoking the getWeIdAttributeChangedEvents method.
      */
     @Test
     public void testCreateWeIdCase4() {
@@ -106,8 +101,7 @@ public class TestCreateWeId1 extends TestBaseServcie {
 
     /**
      * case: Simulation throws an NullPointerException when calling the
-     *       getWeIdAttributeChangedEvents method.
-     *
+     * getWeIdAttributeChangedEvents method.
      */
     @Test
     public void testCreateWeIdCase5() {
@@ -130,9 +124,7 @@ public class TestCreateWeId1 extends TestBaseServcie {
     }
 
     /**
-     * case: Simulation throws an exception when calling the createEcKeyPair
-     *       method.
-     *
+     * case: Simulation throws an exception when calling the createEcKeyPair method.
      */
     @Test
     public void testCreateWeIdCase6() {
@@ -141,7 +133,7 @@ public class TestCreateWeId1 extends TestBaseServcie {
             @Mock
             public ECKeyPair createEcKeyPair()
                 throws NoSuchProviderException {
-                
+
                 throw new NoSuchProviderException();
             }
         };

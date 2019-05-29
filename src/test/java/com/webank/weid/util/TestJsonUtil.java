@@ -55,7 +55,7 @@ public class TestJsonUtil {
         // LinkedHashMap<String, Object> propertitesMap =
         //     (LinkedHashMap<String, Object>)JsonUtil.jsonStrToObj(map, s);
         LinkedHashMap<String, Object> propertitesMap =
-                DataToolUtils.deserialize(s, LinkedHashMap.class);
+            DataToolUtils.deserialize(s, LinkedHashMap.class);
         Assert.assertNotNull(propertitesMap);
     }
 

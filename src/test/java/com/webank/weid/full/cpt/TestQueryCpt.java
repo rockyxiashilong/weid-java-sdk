@@ -22,6 +22,8 @@ package com.webank.weid.full.cpt;
 import java.math.BigInteger;
 import java.util.List;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.tuples.generated.Tuple7;
 import org.junit.Assert;
@@ -39,17 +41,13 @@ import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.request.CptMapArgs;
 import com.webank.weid.protocol.response.ResponseData;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * queryCpt method for testing CptService.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestQueryCpt extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestQueryCpt.class);
 
     @Override
@@ -61,7 +59,7 @@ public class TestQueryCpt extends TestBaseServcie {
         }
     }
 
-    /** 
+    /**
      * case： cpt query success .
      */
     @Test
@@ -74,7 +72,7 @@ public class TestQueryCpt extends TestBaseServcie {
         Assert.assertNotNull(response.getResult());
     }
 
-    /** 
+    /**
      * case： cptId is null.
      */
     @Test
@@ -87,7 +85,7 @@ public class TestQueryCpt extends TestBaseServcie {
         Assert.assertNull(response.getResult());
     }
 
-    /** 
+    /**
      * case： cptId is minus number.
      */
     @Test
@@ -100,7 +98,7 @@ public class TestQueryCpt extends TestBaseServcie {
         Assert.assertNull(response.getResult());
     }
 
-    /** 
+    /**
      * case： cptId is not exists.
      */
     @Test
@@ -113,7 +111,7 @@ public class TestQueryCpt extends TestBaseServcie {
         Assert.assertNull(response.getResult());
     }
 
-    /** 
+    /**
      * case： query after updateCpt.
      */
     @Test
@@ -151,21 +149,21 @@ public class TestQueryCpt extends TestBaseServcie {
         MockUp<CptController> mockTest = new MockUp<CptController>() {
             @Mock
             public RemoteCall<Tuple7<
-	            String, 
-	            List<BigInteger>, 
-	            List<byte[]>, 
-	            List<byte[]>, 
-	            BigInteger, 
-	            byte[], 
-	            byte[]>
-            > queryCpt(BigInteger cptId) {
-            return null;
-            }   
+                String,
+                List<BigInteger>,
+                List<byte[]>,
+                List<byte[]>,
+                BigInteger,
+                byte[],
+                byte[]>
+                > queryCpt(BigInteger cptId) {
+                return null;
+            }
         };
 
         ResponseData<Cpt> response = cptService.queryCpt(cptBaseInfo.getCptId());
         LogUtil.info(logger, "queryCpt", response);
- 
+
         mockTest.tearDown();
 
         Assert.assertEquals(ErrorCode.UNKNOW_ERROR.getCode(), response.getErrorCode().intValue());

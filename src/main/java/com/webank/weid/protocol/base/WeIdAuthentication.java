@@ -33,7 +33,7 @@ public class WeIdAuthentication {
      * Required: The weIdentity DID.
      */
     private String weId;
-    
+
     /**
      * the public key Id.
      */

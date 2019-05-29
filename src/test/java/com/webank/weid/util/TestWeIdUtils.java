@@ -28,17 +28,16 @@ import com.webank.weid.protocol.base.WeIdPrivateKey;
 
 /**
  * Test WeIdUtils.
- * 
- * @author v_wbjnzhang
  *
+ * @author v_wbjnzhang
  */
 public class TestWeIdUtils {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestWeIdUtils.class);
 
     @Test
     public void testConvertWeIdToAddress() {
-        
+
         String address = WeIdUtils.convertWeIdToAddress(null);
         Assert.assertEquals(address, "");
 
@@ -55,7 +54,7 @@ public class TestWeIdUtils {
 
     @Test
     public void testIsWeIdValid() {
-        
+
         boolean result = WeIdUtils.isWeIdValid(null);
         Assert.assertFalse(result);
 
@@ -81,7 +80,7 @@ public class TestWeIdUtils {
 
         String publicKey =
             "4152630134607745313775653941373712642376482837388159007706431164834407808290456176"
-            + "569372213582021586381145279900416808342958821437075568109344613716670953";
+                + "569372213582021586381145279900416808342958821437075568109344613716670953";
         String weId = WeIdUtils.convertPublicKeyToWeId(publicKey);
         Assert.assertNotNull(weId);
         logger.info(weId);
@@ -92,7 +91,7 @@ public class TestWeIdUtils {
 
         String publicKey =
             "41526301346077453137756539413737126423764828373881590077064311648344078082904561"
-            + "76569372213582021586381145279900416808342958821437075568109344613716670953";
+                + "76569372213582021586381145279900416808342958821437075568109344613716670953";
         String privateKey =
             "58317564669857453586637110679746575832914889677346283755719850144028639639651";
         boolean result = WeIdUtils.isKeypairMatch(privateKey, publicKey);

@@ -36,7 +36,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -58,24 +57,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
-
-import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.util.encoders.Base64;
-import org.fisco.bcos.web3j.abi.datatypes.Address;
-import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
-import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
-import org.fisco.bcos.web3j.abi.datatypes.StaticArray;
-import org.fisco.bcos.web3j.abi.datatypes.generated.Bytes32;
-import org.fisco.bcos.web3j.abi.datatypes.generated.Int256;
-import org.fisco.bcos.web3j.abi.datatypes.generated.Uint256;
-import org.fisco.bcos.web3j.abi.datatypes.generated.Uint8;
-import org.fisco.bcos.web3j.crypto.ECKeyPair;
-import org.fisco.bcos.web3j.crypto.Hash;
-import org.fisco.bcos.web3j.crypto.Keys;
-import org.fisco.bcos.web3j.crypto.Sign;
-import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -103,6 +84,24 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.util.encoders.Base64;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
+import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
+import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
+import org.fisco.bcos.web3j.abi.datatypes.StaticArray;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Bytes32;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Int256;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Uint256;
+import org.fisco.bcos.web3j.abi.datatypes.generated.Uint8;
+import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.Hash;
+import org.fisco.bcos.web3j.crypto.Keys;
+import org.fisco.bcos.web3j.crypto.Sign;
+import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.webank.weid.constant.ErrorCode;
 import com.webank.weid.constant.JsonSchemaConstant;
 import com.webank.weid.constant.WeIdConstant;
@@ -427,7 +426,8 @@ public final class DataToolUtils {
      * @return SignatureData
      */
     public static Sign.SignatureData signMessage(String message, ECKeyPair keyPair) {
-        return Sign.getSignInterface().signMessage(sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
+        return Sign.getSignInterface()
+            .signMessage(sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
     }
 
     /**
@@ -444,7 +444,8 @@ public final class DataToolUtils {
 
         BigInteger privateKey = new BigInteger(privateKeyString);
         ECKeyPair keyPair = new ECKeyPair(privateKey, publicKeyFromPrivate(privateKey));
-        return Sign.getSignInterface().signMessage(sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
+        return Sign.getSignInterface()
+            .signMessage(sha3(message.getBytes(StandardCharsets.UTF_8)), keyPair);
     }
 
     /**
@@ -1241,13 +1242,12 @@ public final class DataToolUtils {
         cptSchemaMap.put("patternProperties", patternMap);
         return DataToolUtils.objToJsonStrWithNoPretty(cptSchemaMap);
     }
-    
+
     /**
-     * string to byte
-     * 
+     * string to byte.
+     *
      * @param value stringData
      * @return byte[]
-     * @throws UnsupportedEncodingException
      */
     public static byte[] stringToByteArray(String value) {
         if (StringUtils.isBlank(value)) {
@@ -1255,98 +1255,95 @@ public final class DataToolUtils {
         }
         return value.getBytes(StandardCharsets.UTF_8);
     }
-    
+
     /**
-     * string to byte32
-     * 
+     * string to byte32.
+     *
      * @param value stringData
      * @return byte[]
-     * @throws UnsupportedEncodingException
      */
     public static byte[] stringToByte32Array(String value) {
         if (StringUtils.isBlank(value)) {
             return new byte[32];
         }
-    	
+
         byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
         byte[] newBytes = new byte[32];
-		
+
         System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
-        return newBytes; 	
+        return newBytes;
     }
-    
+
     /**
-     * string to byte32List
-     * 
+     * string to byte32List.
+     *
      * @param data stringData
      * @param size size of byte32List
-     * @return
      */
-    public static List<byte[]> stringToByte32ArrayList(String data,int size) {
+    public static List<byte[]> stringToByte32ArrayList(String data, int size) {
         List<byte[]> byteList = new ArrayList<>();
 
         if (StringUtils.isBlank(data)) {
             for (int i = 0; i < size; i++) {
                 byteList.add(new byte[32]);
             }
-            return byteList;	
+            return byteList;
         }
-    	
+
         byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
-    				
+
         if (dataBytes.length <= WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH) {
             byte[] newBytes = new byte[32];
             System.arraycopy(dataBytes, 0, newBytes, 0, dataBytes.length);
             byteList.add(newBytes);
         } else {
-            byteList = splitBytes(dataBytes,size);
+            byteList = splitBytes(dataBytes, size);
         }
-    		
+
         if (byteList.size() < size) {
             List<byte[]> addList = new ArrayList<>();
             for (int i = 0; i < size - byteList.size(); i++) {
                 addList.add(new byte[32]);
             }
-            byteList.addAll(addList); 	
+            byteList.addAll(addList);
         }
         return byteList;
     }
-    
+
     /**
-     * List<byte[]> to List<byte32[]> 
-     * 
-     * @param list
-     * @param size size of List<byte32[]>
-     * @return
+     * convert bytesArrayList to Bytes32ArrayList.
+     * @param list byte size
+     * @param size size
+     * @return result
      */
-    public static List<byte[]> bytesArrayListToBytes32ArrayList(List<byte[]> list,int size) {
+    public static List<byte[]> bytesArrayListToBytes32ArrayList(List<byte[]> list, int size) {
         List<byte[]> bytesList = new ArrayList<>();
-        
+
         if (list.isEmpty()) {
             for (int i = 0; i < size; i++) {
                 bytesList.add(new byte[32]);
             }
-            return bytesList;	
+            return bytesList;
         }
-    	
-        for (byte[] bytes : list) {			
+
+        for (byte[] bytes : list) {
             if (bytes.length <= WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH) {
                 byte[] newBytes = new byte[32];
                 System.arraycopy(bytes, 0, newBytes, 0, bytes.length);
                 bytesList.add(newBytes);
-            } 
+            }
         }
-    		
+
         if (bytesList.size() < size) {
             List<byte[]> addList = new ArrayList<>();
             for (int i = 0; i < size - bytesList.size(); i++) {
                 addList.add(new byte[32]);
             }
-            bytesList.addAll(addList); 	
+            bytesList.addAll(addList);
         }
         return bytesList;
     }
-    
+
     /**
      * Get the current timestamp as the param "created". May be called elsewhere.
      *
@@ -1358,30 +1355,36 @@ public final class DataToolUtils {
         createdList.add(BigInteger.valueOf(created));
         return createdList;
     }
-    
+
     public static BigInteger intToBigInteger(Integer data) {
         return new BigInteger(data.toString());
     }
-    
-    public static List<BigInteger> listToListBigInteger(List<BigInteger> list,int size) {
+
+    /**
+     * convert list to BigInteger list.
+     * @param list BigInteger list
+     * @param size size
+     * @return result
+     */
+    public static List<BigInteger> listToListBigInteger(List<BigInteger> list, int size) {
         List<BigInteger> bigIntegerList = new ArrayList<>();
         for (BigInteger bs : list) {
             bigIntegerList.add(bs);
         }
-    	
+
         List<BigInteger> addList = new ArrayList<>();
         if (bigIntegerList.size() < size) {
             for (int i = 0; i < size - bigIntegerList.size(); i++) {
                 addList.add(BigInteger.ZERO);
             }
-            bigIntegerList.addAll(addList); 	
+            bigIntegerList.addAll(addList);
         }
         return bigIntegerList;
     }
-    
+
     private static synchronized List<byte[]> splitBytes(byte[] bytes, int size) {
         List<byte[]> byteList = new ArrayList<>();
-        double splitLength = 
+        double splitLength =
             Double.parseDouble(WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH + "");
         int arrayLength = (int) Math.ceil(bytes.length / splitLength);
         byte[] result = new byte[arrayLength];
@@ -1392,7 +1395,7 @@ public final class DataToolUtils {
         for (int i = 0; i < arrayLength; i++) {
             from = (int) (i * splitLength);
             to = (int) (from + splitLength);
-            
+
             if (to > bytes.length) {
                 to = bytes.length;
             }
@@ -1408,43 +1411,42 @@ public final class DataToolUtils {
         }
         return byteList;
     }
-	
+
     /**
-     * byte32List to string
-     * 
-     * @param bytesList
-     * @param size size of byte32List
-     * @return
+     * convert byte32List to String.
+     * @param bytesList list
+     * @param size size
+     * @return reuslt
      */
-    public static synchronized String byte32ListToString(List<byte[]> bytesList,int size) {   	
+    public static synchronized String byte32ListToString(List<byte[]> bytesList, int size) {
         if (bytesList.isEmpty()) {
-            return "";	
+            return "";
         }
-    	
-        int zeroCount=0; 
-        for (int i = 0;i<bytesList.size();i++) {
+
+        int zeroCount = 0;
+        for (int i = 0; i < bytesList.size(); i++) {
             for (int j = 0; j < bytesList.get(i).length; j++) {
-                if(bytesList.get(i)[j]==0){
+                if (bytesList.get(i)[j] == 0) {
                     zeroCount++;
                 }
             }
         }
-    	
-        if(WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH*size-zeroCount == 0) {
+
+        if (WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH * size - zeroCount == 0) {
             return "";
         }
-    	
-        byte[] newByte = new byte[WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH*size-zeroCount];
+
+        byte[] newByte = new byte[WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH * size - zeroCount];
         int index = 0;
-        for (int i = 0;i<bytesList.size();i++) {
+        for (int i = 0; i < bytesList.size(); i++) {
             for (int j = 0; j < bytesList.get(i).length; j++) {
-                if(bytesList.get(i)[j]!=0){
-                    newByte[index]=bytesList.get(i)[j]; 
+                if (bytesList.get(i)[j] != 0) {
+                    newByte[index] = bytesList.get(i)[j];
                     index++;
                 }
             }
         }
-    	
+
         return (new String(newByte)).toString();
     }
 }

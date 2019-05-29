@@ -30,6 +30,7 @@ import lombok.Data;
 @Data
 @Attributes(title = "API Endpoint", description = "API Endpoint address disclosure")
 public class Cpt105 {
+
     @Attributes(required = true, description = "The WeIdentity DID of owner")
     private String ownerWeId;
     @Attributes(required = true, description = "The URL")

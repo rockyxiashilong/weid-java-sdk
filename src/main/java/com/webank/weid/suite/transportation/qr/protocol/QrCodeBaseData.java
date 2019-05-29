@@ -35,82 +35,101 @@ import com.webank.weid.suite.entity.QrCodeVersion;
 
 /**
  * 协议基本配置类.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 @Getter
 @Setter
 public abstract class QrCodeBaseData {
-    
+
     /**
      * 协议分隔符.
      */
     protected static final String PROTOCOL_PARTITION = "|";
-    
+
     /**
      * 协议分隔符(split需要转义).
      */
     protected static final String PROTOCOL_PARTITION_DIVISION = "\\" + PROTOCOL_PARTITION;
-    
+
     /**
      * 协议字符串第一段必须是协议版本.
      */
     protected static final String PROTOCOL_VERSION = "version|";
-    
+    /**
+     * 用于拼接协议字符串.
+     */
+    protected StringBuffer buffer = new StringBuffer();
     /**
      * 协议编解码方法.
      */
     private EncodeType encodeType;
-     
     /**
      * 协议版本.
      */
     private QrCodeVersion version;
-
     /**
      * 协议数据签发机构.
      */
     private String orgId;
-
     /**
      * 协议负载数据编码.
      */
     private String id;
-
     /**
      * 协议负载.
      */
     private String data;
-    
     /**
      * 协议扩展字段.
      */
     private String extendData;
 
     /**
-     * 用于拼接协议字符串.
+     * build Meta instance by Class.
+     *
+     * @param cls class Type
      */
-    protected StringBuffer buffer = new StringBuffer();
-   
+    public static QrCodeBaseData newInstance(Class<?> cls) throws ReflectiveOperationException {
+        return (QrCodeBaseData) cls.newInstance();
+    }
+
+    /**
+     * get the MetaVersion by transString.
+     *
+     * @param transString this is transString
+     */
+    public static QrCodeVersion getQrCodeVersion(String transString) {
+        if (StringUtils.isBlank(transString) || transString.indexOf(PROTOCOL_PARTITION) == -1) {
+            throw new ProtocolSuiteException(ErrorCode.TRANSPORTATION_PROTOCOL_STRING_INVALID);
+        }
+        String version = transString.substring(0, transString.indexOf(PROTOCOL_PARTITION));
+        QrCodeVersion metaVersion = QrCodeVersion.getObject(version);
+        if (metaVersion == null) {
+            throw new ProtocolSuiteException(ErrorCode.TRANSPORTATION_PROTOCOL_VERSION_ERROR);
+        }
+        return metaVersion;
+    }
+
     public String getExtendData() {
         return extendData != null ? extendData : "?";
     }
-    
+
     /**
      * get TransString of Meta.
-     * @return
      */
     public String getTransString() {
         return this.buffer.toString();
     }
-    
+
     public abstract void buildQrCodeData(
-        ProtocolProperty protocol, 
+        ProtocolProperty protocol,
         String orgId
     );
-    
+
     /**
      * 配置协议头.
+     *
      * @param encodeType 编解码类型
      * @param version 协议版本
      */
@@ -118,22 +137,24 @@ public abstract class QrCodeBaseData {
         this.encodeType = encodeType;
         this.version = version;
     }
-    
+
     /**
      * 根据协议对象构建协议字符串buffer.
+     *
      * @return 返回协议对象
      */
     public abstract QrCodeBaseData buildBuffer();
-    
+
     /**
      * 序列化协议对象.
+     *
      * @param protocol 协议模板字符串
      */
     protected void buildBuffer(String[] protocols) {
         buffer.setLength(0);
         try {
             //遍历协议字段
-            for (String  protocolField: protocols) {
+            for (String protocolField : protocols) {
                 //获取字段对应的get方法
                 Method method = getGetterMethod(this.getClass(), protocolField);
                 //调用方法获取字段对应的协议值
@@ -148,27 +169,29 @@ public abstract class QrCodeBaseData {
                 if (buffer.length() == 0) {
                     buffer.append(value);
                 } else {
-                    buffer.append(PROTOCOL_PARTITION).append(value); 
+                    buffer.append(PROTOCOL_PARTITION).append(value);
                 }
             }
-        } catch (ProtocolSuiteException  e) {
+        } catch (ProtocolSuiteException e) {
             throw e;
         } catch (ReflectiveOperationException
             | SecurityException e) {
             throw new WeIdBaseException("buildBuffer error.", e);
         }
     }
-    
+
     /**
      * 根据协议字符串数据构建协议对象数据.
+     *
      * @param transString 协议字符串
-     * @return  返回协议实体对象
+     * @return 返回协议实体对象
      */
     public abstract QrCodeBaseData buildData(String transString);
-    
+
     /**
      * 根据协议字符串数据构建协议对象数据.
-     * @param protocol  协议模板字符串
+     *
+     * @param protocol 协议模板字符串
      * @param transString 协议字符串数据
      */
     protected void buildData(String[] protocols, String transString) {
@@ -206,23 +229,24 @@ public abstract class QrCodeBaseData {
         } catch (ReflectiveOperationException
             | SecurityException e) {
             throw new WeIdBaseException("buildData error.", e);
-        } 
+        }
     }
-    
+
     /**
      * 获取对应字段的get方法.
+     *
      * @param cls 类型名
      * @param fieldName 字段名
-     * @return
      */
     private Method getGetterMethod(Class<?> cls, String fieldName) throws NoSuchMethodException {
         return cls.getMethod("get"
             + fieldName.substring(0, 1).toUpperCase(Locale.getDefault())
             + fieldName.substring(1), new Class[0]);
     }
-    
+
     /**
      * 获取对应的set方法.
+     *
      * @param cls 类型名
      * @param fieldName 字段名
      * @return 返回方法对象
@@ -230,38 +254,12 @@ public abstract class QrCodeBaseData {
      * @throws NoSuchMethodException 有可能产生无方法的异常
      */
     private Method getSetterMethod(
-        Class<?> cls, 
+        Class<?> cls,
         String fieldName
     ) throws NoSuchMethodException, SecurityException {
         String methodName = "set"
             + fieldName.substring(0, 1).toUpperCase(Locale.getDefault())
             + fieldName.substring(1);
         return cls.getMethod(methodName, getGetterMethod(cls, fieldName).getReturnType());
-    }
-    
-    /**
-     * build Meta instance by Class.
-     * @param cls class Type
-     * @return
-     */
-    public static QrCodeBaseData newInstance(Class<?> cls) throws ReflectiveOperationException {
-        return (QrCodeBaseData)cls.newInstance();
-    }
-    
-    /**
-     * get the MetaVersion by transString.
-     * @param transString this is transString
-     * @return
-     */
-    public static QrCodeVersion getQrCodeVersion(String transString) {
-        if (StringUtils.isBlank(transString) || transString.indexOf(PROTOCOL_PARTITION) == -1) {
-            throw new ProtocolSuiteException(ErrorCode.TRANSPORTATION_PROTOCOL_STRING_INVALID);
-        }
-        String version = transString.substring(0, transString.indexOf(PROTOCOL_PARTITION));
-        QrCodeVersion metaVersion = QrCodeVersion.getObject(version);
-        if (metaVersion == null) {
-            throw new ProtocolSuiteException(ErrorCode.TRANSPORTATION_PROTOCOL_VERSION_ERROR);
-        }
-        return metaVersion;
     }
 }

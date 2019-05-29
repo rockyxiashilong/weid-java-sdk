@@ -19,6 +19,8 @@
 
 package com.webank.weid.full.auth;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,16 +36,13 @@ import com.webank.weid.protocol.request.RemoveAuthorityIssuerArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * isAuthorityIssuer method for testing AuthorityIssuerService.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class TestIsAuthorityIssuer extends TestBaseServcie {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(TestIsAuthorityIssuer.class);
 
     private static CreateWeIdDataResult createWeId;
@@ -60,7 +59,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: is authority issuer.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase1() {
@@ -75,7 +73,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is bad format.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase2() {
@@ -89,7 +86,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: WeIdentity DID is blank.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase3() {
@@ -103,7 +99,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: the WeIdentity DID is registed by other.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase4() {
@@ -119,7 +114,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: the WeIdentity DID is not exists.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase5() {
@@ -135,7 +129,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: the WeIdentity DID is removed.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase6() {
@@ -163,7 +156,6 @@ public class TestIsAuthorityIssuer extends TestBaseServcie {
 
     /**
      * case: Simulation returns null when invoking the isAuthorityIssuer method.
-     *
      */
     @Test
     public void testIsAuthorityIssuerCase9() {

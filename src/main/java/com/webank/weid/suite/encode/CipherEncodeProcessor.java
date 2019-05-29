@@ -40,20 +40,16 @@ import com.webank.weid.util.DataToolUtils;
 
 /**
  * 密文编解码处理器.
- * 
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public class CipherEncodeProcessor extends BaseService implements EncodeProcessor {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(CipherEncodeProcessor.class);
-    
-    private Persistence dataDriver = new MysqlDriver();
-    
-    protected AmopService amopService = new AmopServiceImpl();
-    
     private static final String TRANSENCRYPTIONDOMAIN = "transEncryption";
-    
+    protected AmopService amopService = new AmopServiceImpl();
+    private Persistence dataDriver = new MysqlDriver();
+
     /**
      * 密文编码处理：先进行压缩，然后进行AES加密.
      */
@@ -63,12 +59,12 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
         try {
             String key = KeyGenerator.getKey();
             //将数据进行AES加密处理
-            String value = 
+            String value =
                 CryptServiceFactory
                     .getCryptService(CryptType.AES)
                     .encrypt(encodeData.getData(), key);
             //保存秘钥
-            ResponseData<Integer> response = 
+            ResponseData<Integer> response =
                 this.dataDriver.save(TRANSENCRYPTIONDOMAIN, encodeData.getId(), key);
             if (response.getErrorCode().intValue() != ErrorCode.SUCCESS.getCode()) {
                 throw new EncodeSuiteException(
@@ -83,7 +79,7 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
         } catch (Exception e) {
             logger.error("encode processor has unknow error.", e);
             throw new EncodeSuiteException(e);
-        }  
+        }
     }
 
     /**
@@ -95,7 +91,7 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
         try {
             String key = this.getEntryptKey(encodeData);
             //将数据进行AES解密
-            String value = 
+            String value =
                 CryptServiceFactory
                     .getCryptService(CryptType.AES)
                     .decrypt(encodeData.getData(), key);
@@ -108,14 +104,14 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
         } catch (Exception e) {
             logger.error("decode processor has unknow error.", e);
             throw new EncodeSuiteException(e);
-        }  
+        }
     }
 
     private String getEntryptKey(EncodeData encodeData) {
         //说明是当前机构，这个时候不适用于AMOP获取key，而是从本地数据库中获取key
         if (fromOrgId.equals(encodeData.getOrgId())) {
             //保存秘钥
-            ResponseData<String> response = 
+            ResponseData<String> response =
                 this.dataDriver.get(TRANSENCRYPTIONDOMAIN, encodeData.getId());
             if (response.getErrorCode().intValue() != ErrorCode.SUCCESS.getCode()) {
                 throw new EncodeSuiteException(
@@ -125,12 +121,13 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
             return response.getResult();
         } else {
             //获取秘钥，
-            return this.requestEncryptKeyByAmop(encodeData);  
+            return this.requestEncryptKeyByAmop(encodeData);
         }
     }
 
     /**
      * 获取秘钥key.
+     *
      * @param encodeData 编解码实体
      * @return 返回秘钥
      */
@@ -140,7 +137,7 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
         args.setMessageId(DataToolUtils.getUuId32());
         args.setToOrgId(encodeData.getOrgId());
         args.setFromOrgId(fromOrgId);
-        ResponseData<GetEncryptKeyResponse> resResponse = 
+        ResponseData<GetEncryptKeyResponse> resResponse =
             amopService.getEncryptKey(encodeData.getOrgId(), args);
         if (resResponse.getErrorCode().intValue() != ErrorCode.SUCCESS.getCode()) {
             logger.error("AMOP response fail, dataId={}, errorCode={}, errorMessage={}",
@@ -153,8 +150,8 @@ public class CipherEncodeProcessor extends BaseService implements EncodeProcesso
             );
         }
         GetEncryptKeyResponse keyResponse = resResponse.getResult();
-        ErrorCode errorCode = 
-                ErrorCode.getTypeByErrorCode(keyResponse.getErrorCode().intValue());
+        ErrorCode errorCode =
+            ErrorCode.getTypeByErrorCode(keyResponse.getErrorCode().intValue());
         if (errorCode.getCode() != ErrorCode.SUCCESS.getCode()) {
             logger.error(
                 "requestEncryptKey error, dataId={}, errorCode={}, errorMessage={}",

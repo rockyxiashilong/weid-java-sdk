@@ -67,6 +67,7 @@ public enum AmopMsgType {
 
     /**
      * callback by type.
+     *
      * @param amopCallback the callback instance
      * @param messageId the messageId
      * @param msgBodyStr the message body
@@ -84,7 +85,7 @@ public enum AmopMsgType {
                 AmopNotifyMsgResult result = amopCallback.onPush(args);
                 resultBodyStr = DataToolUtils.serialize(result);
                 break;
-            } 
+            }
             case TYPE_TRANSPORTATION: {
                 AmopCommonArgs args = DataToolUtils.deserialize(msgBodyStr, AmopCommonArgs.class);
                 AmopResponse result = amopCallback.onPush(args);
@@ -98,7 +99,7 @@ public enum AmopMsgType {
                 GetEncryptKeyResponse result = amopCallback.onPush(args);
                 resultBodyStr = DataToolUtils.serialize(result);
                 break;
-            }   
+            }
             case GET_POLICY_AND_CHALLENGE: {
                 // GET POLICY AND CHALLENGE
                 GetPolicyAndChallengeArgs args =
@@ -106,7 +107,7 @@ public enum AmopMsgType {
                 GetPolicyAndChallengeResponse result = amopCallback.onPush(args);
                 resultBodyStr = DataToolUtils.serialize(result);
                 break;
-            }   
+            }
             default:
                 break;
         }

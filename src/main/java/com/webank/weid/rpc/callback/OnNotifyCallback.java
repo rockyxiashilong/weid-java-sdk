@@ -38,14 +38,14 @@ import com.webank.weid.util.DataToolUtils;
 public class OnNotifyCallback extends ChannelPushCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(OnNotifyCallback.class);
-    
+
     private Map<Integer, AmopCallback> amopCallBackMap = new HashMap<Integer, AmopCallback>();
 
     public void registAmopCallback(Integer msgType, AmopCallback routeCallBack) {
 
         amopCallBackMap.put(msgType, routeCallBack);
     }
-    
+
     @Override
     public void onPush(ChannelPush push) {
 
@@ -56,9 +56,9 @@ public class OnNotifyCallback extends ChannelPushCallback {
             push.sendResponse(response);
             return;
         }
-        
+
         logger.info("received ChannelPush msg : " + push.getContent());
-        AmopRequestBody amopRequestBody = 
+        AmopRequestBody amopRequestBody =
             DataToolUtils.deserialize(push.getContent(), AmopRequestBody.class);
         AmopMsgType msgType = amopRequestBody.getMsgType();
         AmopCallback amopCallBack = amopCallBackMap.get(msgType.getValue());

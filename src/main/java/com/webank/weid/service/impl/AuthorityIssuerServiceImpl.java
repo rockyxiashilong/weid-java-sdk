@@ -116,7 +116,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
     @Override
     public ResponseData<Boolean> registerAuthorityIssuer(RegisterAuthorityIssuerArgs args) {
 
-    	ErrorCode innerResponseData = checkRegisterAuthorityIssuerArgs(args);
+        ErrorCode innerResponseData = checkRegisterAuthorityIssuerArgs(args);
         if (ErrorCode.SUCCESS.getCode() != innerResponseData.getCode()) {
             return new ResponseData<>(false, innerResponseData);
         }
@@ -125,40 +125,40 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
         String weAddress = WeIdUtils.convertWeIdToAddress(authorityIssuer.getWeId());
         List<byte[]> stringAttributes = new ArrayList<byte[]>();
         stringAttributes.add(authorityIssuer.getName().getBytes());
-        List<BigInteger>longAttributes = new ArrayList<>();
+        List<BigInteger> longAttributes = new ArrayList<>();
         Long createDate = System.currentTimeMillis();
         longAttributes.add(BigInteger.valueOf(createDate));
         try {
-        	reloadAuthorityIssuerContract(args.getWeIdPrivateKey().getPrivateKey());
+            reloadAuthorityIssuerContract(args.getWeIdPrivateKey().getPrivateKey());
             TransactionReceipt receipt = authorityIssuerController.addAuthorityIssuer(
-            	weAddress,
-            	DataToolUtils.bytesArrayListToBytes32ArrayList(
-            	    stringAttributes,
-            	    WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
-            	),
-            	DataToolUtils.listToListBigInteger(
-            	    longAttributes,
-            	    WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
-            	),
-            	authorityIssuer.getAccValue().getBytes()
+                weAddress,
+                DataToolUtils.bytesArrayListToBytes32ArrayList(
+                    stringAttributes,
+                    WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
+                ),
+                DataToolUtils.listToListBigInteger(
+                    longAttributes,
+                    WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
+                ),
+                authorityIssuer.getAccValue().getBytes()
             ).send();
             ErrorCode errorCode = resolveRegisterAuthorityIssuerEvents(receipt);
             TransactionInfo info = new TransactionInfo(receipt);
             if (errorCode.equals(ErrorCode.SUCCESS)) {
-                return new ResponseData<>(Boolean.TRUE, ErrorCode.SUCCESS,info);
+                return new ResponseData<>(Boolean.TRUE, ErrorCode.SUCCESS, info);
             } else {
-                return new ResponseData<>(Boolean.FALSE, errorCode,info);
+                return new ResponseData<>(Boolean.FALSE, errorCode, info);
             }
         } catch (Exception e) {
             logger.error("register authority issuer failed.", e);
         }
         return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
     }
-    
+
     private ErrorCode resolveRegisterAuthorityIssuerEvents(
         TransactionReceipt transactionReceipt) {
         List<AuthorityIssuerRetLogEventResponse> eventList =
-        		authorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
+            authorityIssuerController.getAuthorityIssuerRetLogEvents(transactionReceipt);
 
         AuthorityIssuerRetLogEventResponse event = eventList.get(0);
         if (event != null) {
@@ -173,7 +173,7 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             return ErrorCode.AUTHORITY_ISSUER_ERROR;
         }
     }
-    
+
     private ErrorCode verifyAuthorityIssuerRelatedEvent(
         AuthorityIssuerRetLogEventResponse event,
         Integer opcode) {
@@ -207,11 +207,11 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
 
         String weId = args.getWeId();
         try {
-        	reloadAuthorityIssuerContract(args.getWeIdPrivateKey().getPrivateKey());
+            reloadAuthorityIssuerContract(args.getWeIdPrivateKey().getPrivateKey());
             TransactionReceipt receipt = authorityIssuerController
                 .removeAuthorityIssuer(WeIdUtils.convertWeIdToAddress(weId)).send();
             List<AuthorityIssuerRetLogEventResponse> eventList =
-            		authorityIssuerController.getAuthorityIssuerRetLogEvents(receipt);
+                authorityIssuerController.getAuthorityIssuerRetLogEvents(receipt);
 
             TransactionInfo info = new TransactionInfo(receipt);
             AuthorityIssuerRetLogEventResponse event = eventList.get(0);
@@ -222,13 +222,13 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
                     WeIdConstant.REMOVE_AUTHORITY_ISSUER_OPCODE
                 );
                 if (ErrorCode.SUCCESS.getCode() != errorCode.getCode()) {
-                    return new ResponseData<>(false, errorCode,info);
+                    return new ResponseData<>(false, errorCode, info);
                 } else {
-                    return new ResponseData<>(true, errorCode,info);
+                    return new ResponseData<>(true, errorCode, info);
                 }
             } else {
                 logger.error("remove authority issuer failed, transcation event decoding failure.");
-                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR,info);
+                return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR, info);
             }
         } catch (Exception e) {
             logger.error("remove authority issuer failed.", e);
@@ -244,14 +244,14 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
      */
     @Override
     public ResponseData<Boolean> isAuthorityIssuer(String weId) {
-    	ResponseData<Boolean> responseData = new ResponseData<Boolean>();
+        ResponseData<Boolean> responseData = new ResponseData<Boolean>();
 
         if (!WeIdUtils.isWeIdValid(weId)) {
             return new ResponseData<>(false, ErrorCode.WEID_INVALID);
         }
         try {
             Boolean result = authorityIssuerController.isAuthorityIssuer(
-            	WeIdUtils.convertWeIdToAddress(weId)).send();
+                WeIdUtils.convertWeIdToAddress(weId)).send();
             responseData.setResult(result);
             if (result) {
                 responseData.setErrorCode(ErrorCode.SUCCESS);
@@ -273,14 +273,14 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
      */
     @Override
     public ResponseData<AuthorityIssuer> queryAuthorityIssuerInfo(String weId) {
-    	ResponseData<AuthorityIssuer> responseData = new ResponseData<>();
+        ResponseData<AuthorityIssuer> responseData = new ResponseData<>();
         if (!WeIdUtils.isWeIdValid(weId)) {
             return new ResponseData<>(null, ErrorCode.WEID_INVALID);
         }
         try {
             Tuple2<List<byte[]>, List<BigInteger>> rawResult =
                 authorityIssuerController.getAuthorityIssuerInfoNonAccValue(
-                	WeIdUtils.convertWeIdToAddress(weId)).send();
+                    WeIdUtils.convertWeIdToAddress(weId)).send();
             if (rawResult == null) {
                 return new ResponseData<>(null, ErrorCode.AUTHORITY_ISSUER_ERROR);
             }
@@ -291,8 +291,8 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             AuthorityIssuer result = new AuthorityIssuer();
             result.setWeId(weId);
             String name = DataToolUtils.byte32ListToString(
-            	bytes32Attributes,
-            	WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
+                bytes32Attributes,
+                WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH
             );
             Long createDate = Long
                 .valueOf(int256Attributes.get(0).longValue());
@@ -328,10 +328,10 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             return new ResponseData<>(null, errorCode);
         }
         try {
-            List<String> addressList = 
+            List<String> addressList =
                 authorityIssuerController.getAuthorityIssuerAddressList(
-            	    DataToolUtils.intToBigInteger(index), 
-            	    DataToolUtils.intToBigInteger(num)
+                    DataToolUtils.intToBigInteger(index),
+                    DataToolUtils.intToBigInteger(num)
                 ).send();
 
             List<AuthorityIssuer> authorityIssuerList = new ArrayList<>();
@@ -369,13 +369,13 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             reloadSpecificIssuerContract(callerAuth.getWeIdPrivateKey().getPrivateKey());
             TransactionReceipt receipt = specificIssuerController
                 .registerIssuerType(DataToolUtils.stringToByte32Array(issuerType)).send();
-            
+
             // pass-in empty address
             String emptyAddress = new Address(BigInteger.ZERO).toString();
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, true, emptyAddress);
             TransactionInfo info = new TransactionInfo(receipt);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode,info);
+                errorCode, info);
         } catch (Exception e) {
             logger.error("register issuer type failed.", e);
             return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
@@ -405,8 +405,8 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             reloadSpecificIssuerContract(callerAuth.getWeIdPrivateKey().getPrivateKey());
             String issuerAddress = WeIdUtils.convertWeIdToAddress(targetIssuerWeId);
             TransactionReceipt receipt = specificIssuerController.addIssuer(
-            	DataToolUtils.stringToByte32Array(issuerType), 
-        		issuerAddress
+                DataToolUtils.stringToByte32Array(issuerType),
+                issuerAddress
             ).send();
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, true, issuerAddress);
             TransactionInfo info = new TransactionInfo(receipt);
@@ -440,13 +440,13 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             reloadSpecificIssuerContract(callerAuth.getWeIdPrivateKey().getPrivateKey());
             String issuerAddress = WeIdUtils.convertWeIdToAddress(targetIssuerWeId);
             TransactionReceipt receipt = specificIssuerController.removeIssuer(
-            	DataToolUtils.stringToByte32Array(issuerType),
+                DataToolUtils.stringToByte32Array(issuerType),
                 issuerAddress).send();
 
             ErrorCode errorCode = resolveSpecificIssuerEvents(receipt, false, issuerAddress);
             TransactionInfo info = new TransactionInfo(receipt);
             return new ResponseData<>(errorCode.getCode() == ErrorCode.SUCCESS.getCode(),
-                errorCode,info);
+                errorCode, info);
         } catch (Exception e) {
             logger.error("remove issuer from type failed.", e);
             return new ResponseData<>(false, ErrorCode.AUTHORITY_ISSUER_ERROR);
@@ -472,10 +472,10 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             return new ResponseData<>(false, ErrorCode.WEID_DOES_NOT_EXIST);
         }
         try {
-        	String weAddress = WeIdUtils.convertWeIdToAddress(targetIssuerWeId);
-        	Boolean result = specificIssuerController.isSpecificTypeIssuer(
-        	    DataToolUtils.stringToByte32Array(issuerType),
-        	    weAddress
+            String weAddress = WeIdUtils.convertWeIdToAddress(targetIssuerWeId);
+            Boolean result = specificIssuerController.isSpecificTypeIssuer(
+                DataToolUtils.stringToByte32Array(issuerType),
+                weAddress
             ).send();
 
             if (!result) {
@@ -513,17 +513,17 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
         try {
             List<String> addresses = specificIssuerController.getSpecificTypeIssuerList(
                 DataToolUtils.stringToByte32Array(issuerType),
-                DataToolUtils.intToBigInteger(index), 
+                DataToolUtils.intToBigInteger(index),
                 DataToolUtils.intToBigInteger(num)
             ).send();
-            
+
             List<String> addressList = new ArrayList<>();
             for (String addr : addresses) {
                 if (!WeIdUtils.isEmptyStringAddress(addr)) {
                     addressList.add(addr);
                 }
             }
-            
+
             return new ResponseData<>(addressList, ErrorCode.SUCCESS);
         } catch (Exception e) {
             logger.error("get all specific issuers failed.", e);
@@ -683,18 +683,4 @@ public class AuthorityIssuerServiceImpl extends BaseService implements Authority
             && StringUtils.isAsciiPrintable(name);
     }
 
-//    private String[] loadNameToStringAttributes(String name) {
-//        String[] nameArray = new String[WeIdConstant.AUTHORITY_ISSUER_ARRAY_LEGNTH];
-//        nameArray[0] = name;
-//        return nameArray;
-//    }
-
-//    private String extractNameFromBytes32Attributes(List<Bytes32> bytes32Array) {
-//        StringBuffer name = new StringBuffer();
-//        int maxLength = WeIdConstant.MAX_AUTHORITY_ISSUER_NAME_LENGTH / 32;
-//        for (int i = 0; i < maxLength; i++) {
-//            name.append(DataToolUtils.bytes32ToString(bytes32Array.get(i)));
-//        }
-//        return name.toString();
-//    }
 }

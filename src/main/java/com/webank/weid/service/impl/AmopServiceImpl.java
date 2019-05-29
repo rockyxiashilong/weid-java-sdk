@@ -118,7 +118,7 @@ public class AmopServiceImpl extends BaseService implements AmopService {
     }
 
     /**
-     *  通过AMOP获取秘钥请求接口.
+     * 通过AMOP获取秘钥请求接口.
      */
     public ResponseData<GetEncryptKeyResponse> getEncryptKey(String toOrgId,
         GetEncryptKeyArgs args) {

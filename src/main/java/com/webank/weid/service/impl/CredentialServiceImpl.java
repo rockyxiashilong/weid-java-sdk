@@ -110,7 +110,7 @@ public class CredentialServiceImpl extends BaseService implements CredentialServ
                 );
             }
             credentialWrapper.setDisclosure(disclosureMap);
-            
+
             // Construct Credential Proof
             Map<String, String> credentialProof = CredentialUtils.buildCredentialProof(
                 result,
@@ -324,7 +324,7 @@ public class CredentialServiceImpl extends BaseService implements CredentialServ
                     return new ResponseData<>(false, ErrorCode.CREDENTIAL_WEID_DOCUMENT_ILLEGAL);
                 } else {
                     WeIdDocument weIdDocument = innerResponseData.getResult();
-                    ErrorCode errorCode =  DataToolUtils
+                    ErrorCode errorCode = DataToolUtils
                         .verifySignatureFromWeId(rawData, signatureData, weIdDocument);
                     if (errorCode.getCode() != ErrorCode.SUCCESS.getCode()) {
                         return new ResponseData<>(false, errorCode);

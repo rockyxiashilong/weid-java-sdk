@@ -194,30 +194,30 @@ public enum ErrorCode {
      * The credential private key not exists.
      */
     CREDENTIAL_PUBLIC_KEY_NOT_EXISTS(
-        100421, 
+        100421,
         "public key for verifying credential signature does not exist"
     ),
-    
+
     /**
      * The signature for verifying credential does not exist.
      */
     CREDENTIAL_SIGNATURE_NOT_EXISTS(100422, "signature for verifying credential does not exist"),
-    
+
     /**
      * The credential policy disclosurevalue illegal.
      */
     CREDENTIAL_POLICY_DISCLOSUREVALUE_ILLEGAL(100423, "policy disclosurevalue illegal"),
-    
+
     /**
      * The credential disclosurevalue notmatch saltvalue.
      */
     CREDENTIAL_DISCLOSUREVALUE_NOTMATCH_SALTVALUE(100424, "disclosurevalue notmatch saltvalue"),
-    
+
     /**
      * The credential cptId notmatch.
      */
     CREDENTIAL_CPTID_NOTMATCH(100425, "credential cptId notmatch"),
-    
+
     /**
      * The credential presenterWeId notmatch.
      */
@@ -356,7 +356,7 @@ public enum ErrorCode {
      * 协议字段值不能包含"|".
      */
     TRANSPORTATION_PROTOCOL_FIELD_INVALID(
-        100806, 
+        100806,
         "the protocol field values cannot be included '|'."
     ),
 
@@ -438,14 +438,14 @@ public enum ErrorCode {
         500202,
         "the authority issuer contract error: the subject does not exist"
     ),
-    
+
     /**
      * The Authority Issuer Contract level error: name already exists.
      */
     AUTHORITY_ISSUER_CONTRACT_ERROR_NAME_ALREADY_EXISTS(
         500203,
         "the authority issuer name already exists."
-    ), 
+    ),
 
     /**
      * The Specific Issuer Contract level error: already exists.
@@ -561,10 +561,10 @@ public enum ErrorCode {
      * AMOP server side has no direct route callback.
      */
     AMOP_MSG_CALLBACK_SERVER_SIDE_NO_HANDLE(
-        160012, 
+        160012,
         "amop server side has no direct route callback."
     ),
-    
+
     /**
      * other uncatched exceptions or error.
      */
@@ -589,6 +589,20 @@ public enum ErrorCode {
     ErrorCode(int code, String codeDesc) {
         this.code = code;
         this.codeDesc = codeDesc;
+    }
+
+    /**
+     * get ErrorType By errcode.
+     *
+     * @param errorCode the ErrorCode
+     */
+    public static ErrorCode getTypeByErrorCode(int errorCode) {
+        for (ErrorCode type : ErrorCode.values()) {
+            if (type.getCode() == errorCode) {
+                return type;
+            }
+        }
+        return null;
     }
 
     /**
@@ -625,19 +639,5 @@ public enum ErrorCode {
      */
     protected void setCodeDesc(String codeDesc) {
         this.codeDesc = codeDesc;
-    }
-
-    /**
-     * get ErrorType By errcode.
-     *
-     * @param errorCode the ErrorCode
-     */
-    public static ErrorCode getTypeByErrorCode(int errorCode) {
-        for (ErrorCode type : ErrorCode.values()) {
-            if (type.getCode() == errorCode) {
-                return type;
-            }
-        }
-        return null;
     }
 }

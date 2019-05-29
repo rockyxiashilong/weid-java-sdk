@@ -21,8 +21,8 @@ package com.webank.weid.suite.entity;
 
 /**
  * 加解密类型枚举.
- * @author v_wbgyang
  *
+ * @author v_wbgyang
  */
 public enum CryptType {
     AES;

@@ -22,6 +22,8 @@ package com.webank.weid.full.credential;
 import java.security.SignatureException;
 import java.util.Map;
 
+import mockit.Mock;
+import mockit.MockUp;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Sign;
 import org.junit.Assert;
@@ -44,9 +46,6 @@ import com.webank.weid.protocol.response.ResponseData;
 import com.webank.weid.service.impl.WeIdServiceImpl;
 import com.webank.weid.util.DataToolUtils;
 
-import mockit.Mock;
-import mockit.MockUp;
-
 /**
  * verifyCredential method for testing CredentialService.
  *
@@ -55,10 +54,8 @@ import mockit.MockUp;
 public class TestVerifyCredential extends TestBaseServcie {
 
     private static final Logger logger = LoggerFactory.getLogger(TestVerifyCredential.class);
-
-    protected PasswordKey passwordKey = null;
-
     private static Credential credential = null;
+    protected PasswordKey passwordKey = null;
 
     @Override
     public synchronized void testInit() {
