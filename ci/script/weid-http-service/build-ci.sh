@@ -26,10 +26,9 @@ if [ "$TRAVIS_BRANCH" = "master" ];then
     cp dist/lib/* weid-http-service/dist/lib/
 
     # copy config files
-    cp ecdsa_key weid-http-service/src/main/resources/
-    cp ecdsa_key weid-http-service/src/test/resources/
     cp src/main/resources/* weid-http-service/src/main/resources/
     cp src/main/resources/* weid-http-service/src/test/resources/
+    cp ecdsa_key weid-http-service/keys/priv
 
     # run repo ci scripts
     cd weid-http-service/
