@@ -19,11 +19,13 @@
 
 package com.webank.weid.full.credentialpojo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,10 +40,11 @@ import com.webank.weid.protocol.base.CptBaseInfo;
 import com.webank.weid.protocol.base.CredentialPojo;
 import com.webank.weid.protocol.base.WeIdAuthentication;
 import com.webank.weid.protocol.base.WeIdPrivateKey;
+import com.webank.weid.protocol.request.CptMapArgs;
 import com.webank.weid.protocol.request.CreateCredentialPojoArgs;
 import com.webank.weid.protocol.response.CreateWeIdDataResult;
 import com.webank.weid.protocol.response.ResponseData;
-import com.webank.weid.util.DateUtils;
+import com.webank.weid.util.DataToolUtils;
 
 /**
  * createCredential method for testing CredentialService.
@@ -84,55 +87,76 @@ public class TestCreateCredentialPojo extends TestBaseServcie {
     }
 
     /**
-     * case：when issuer and cpt publisher is same,createCredentialPojo success.
+     * case：createCredential success refer to doc.
      */
     @Test
-    public void testCreateMultiSignCredentialPojo_success() {
+    public void testCreateCredentialPojo_complexSucess() throws IOException {
 
-        CreateCredentialPojoArgs<Map<String, Object>> createCredentialPojoArgs =
-            TestBaseUtil.buildCreateCredentialPojoArgs(createWeIdResultWithSetAttr);
-        createCredentialPojoArgs.setCptId(cptBaseInfo.getCptId());
-        ResponseData<CredentialPojo> credResp1 =
-            credentialPojoService.createCredential(createCredentialPojoArgs);
-        LogUtil.info(logger, "createCredentialPojo", credResp1);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), credResp1.getErrorCode().intValue());
+        //创建一个WeId
+        CreateWeIdDataResult createWeId = super.createWeId();
+        WeIdAuthentication weIdAuthentication = new WeIdAuthentication();
+        weIdAuthentication.setWeId(createWeId.getWeId());
+        weIdAuthentication.setWeIdPrivateKey(new WeIdPrivateKey());
+        weIdAuthentication.getWeIdPrivateKey()
+            .setPrivateKey(createWeId.getUserWeIdPrivateKey().getPrivateKey());
+        weIdAuthentication.setWeIdPublicKeyId(createWeId.getUserWeIdPublicKey().getPublicKey());
+
+        //注册cpt
+        HashMap<String, Object> cptJsonSchemaData = new HashMap<String, Object>();
+        JsonNode jsonNode = JsonLoader.fromResource("/cert.json");
+        cptJsonSchemaData = DataToolUtils.deserialize(
+            jsonNode.toString(),
+            HashMap.class
+        );
+        System.out.println(cptJsonSchemaData);
+
+        CptMapArgs cptMapArgs = new CptMapArgs();
+        cptMapArgs.setCptJsonSchema(cptJsonSchemaData);
+        cptMapArgs.setWeIdAuthentication(weIdAuthentication);
+        CptBaseInfo cptBaseInfo = registerCpt(createWeId, cptMapArgs);
+        System.out.println(cptBaseInfo);
+
+        HashMap<String, Object> claim = new HashMap<>();
+        claim.put("did", createWeId.getWeId());
+        HashMap<String, Object> fullname = new HashMap<>();
+        fullname.put("en", "rocky");
+        fullname.put("cn", "龙");
+        claim.put("fullname", fullname);
+        HashMap<String, Object> cert = new HashMap<>();
+        cert.put("code", "9527");
+        cert.put("title", fullname);
+        cert.put("category", fullname);
+        cert.put("issueDate", "2021-01-18T10:11:11Z");
+        claim.put("cert", cert);
+        ArrayList<Object> issuers = new ArrayList<>();
+        HashMap<String, Object> items = new HashMap<>();
+        HashMap<String, Object> name = new HashMap<>();
+        name.put("name", fullname);
+        items.put("items", name);
+        issuers.add(items);
+        claim.put("issuers", issuers);
+        CreateCredentialPojoArgs createCredentialArgs = new CreateCredentialPojoArgs();
+        createCredentialArgs.setClaim(claim);
+        System.out.println(claim);
+
+        createCredentialArgs.setCptId(cptBaseInfo.getCptId());
+        createCredentialArgs.setExpirationDate(
+            System.currentTimeMillis() + (1000 * 60 * 60 * 24));
+        createCredentialArgs.setIssuer(createWeId.getWeId());
+        createCredentialArgs.setWeIdAuthentication(weIdAuthentication);
+        System.out.println(createCredentialArgs.getClaim());
+        ResponseData<CredentialPojo> response =
+            credentialPojoService.createCredential(createCredentialArgs);
+        LogUtil.info(logger, "createCredentialPojo", response);
+
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+
         ResponseData<Boolean> verify = credentialPojoService.verify(
-            createCredentialPojoArgs.getIssuer(), credResp1.getResult());
+            createCredentialArgs.getIssuer(), response.getResult());
+        LogUtil.info(logger, "verify", verify);
+        Assert.assertEquals(
+            ErrorCode.SUCCESS.getCode(), verify.getErrorCode().intValue());
         Assert.assertTrue(verify.getResult());
-
-        CreateWeIdDataResult weIdResult2 = createWeIdWithSetAttr();
-        createCredentialPojoArgs = TestBaseUtil.buildCreateCredentialPojoArgs(weIdResult2);
-        createCredentialPojoArgs.setCptId(cptBaseInfo.getCptId());
-        Long expirationDate = DateUtils.convertToNoMillisecondTimeStamp(
-            createCredentialPojoArgs.getExpirationDate() + 24 * 60 * 60);
-        createCredentialPojoArgs.setExpirationDate(expirationDate);
-        ResponseData<CredentialPojo> credResp2 =
-            credentialPojoService.createCredential(createCredentialPojoArgs);
-        LogUtil.info(logger, "createCredentialPojo", credResp2);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), credResp2.getErrorCode().intValue());
-        verify = credentialPojoService.verify(
-            createCredentialPojoArgs.getIssuer(), credResp2.getResult());
-        Assert.assertTrue(verify.getResult());
-
-        List<CredentialPojo> credPojoList = new ArrayList<>();
-        credPojoList.add(credResp1.getResult());
-        credPojoList.add(credResp2.getResult());
-        CreateWeIdDataResult weIdResult3 = createWeIdWithSetAttr();
-        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weIdResult3);
-        CredentialPojo doubleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
-            .getResult();
-        Assert.assertEquals(doubleSigned.getCptId(),
-            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
-        Assert.assertEquals(doubleSigned.getExpirationDate(), expirationDate);
-        ResponseData<Boolean> verifyResp = credentialPojoService
-            .verify(doubleSigned.getIssuer(), doubleSigned);
-        Assert.assertTrue(verifyResp.getResult());
-        credPojoList = new ArrayList<>();
-        credPojoList.add(doubleSigned);
-        CredentialPojo tripleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
-            .getResult();
-        verifyResp = credentialPojoService.verify(doubleSigned.getIssuer(), tripleSigned);
-        Assert.assertTrue(verifyResp.getResult());
     }
 
     /**
@@ -344,7 +368,7 @@ public class TestCreateCredentialPojo extends TestBaseServcie {
 
         CreateCredentialPojoArgs<Map<String, Object>> createCredentialPojoArgs =
             TestBaseUtil.buildCreateCredentialPojoArgs(createWeIdResultWithSetAttr);
-
+        
         ResponseData<CredentialPojo> response =
             credentialPojoService.createCredential(createCredentialPojoArgs);
         LogUtil.info(logger, "createCredentialPojo", response);
@@ -476,7 +500,7 @@ public class TestCreateCredentialPojo extends TestBaseServcie {
         LogUtil.info(logger, "createCredentialPojo", response);
 
         Assert.assertEquals(ErrorCode.WEID_PRIVATEKEY_DOES_NOT_MATCH.getCode(),
-            response.getErrorCode().intValue());
+                response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
     }
 
@@ -615,7 +639,7 @@ public class TestCreateCredentialPojo extends TestBaseServcie {
             credentialPojoService.createCredential(createCredentialPojoArgs);
         LogUtil.info(logger, "createCredentialPojo", response);
 
-        Assert.assertEquals(ErrorCode.CREDENTIAL_EXPIRED.getCode(),
+        Assert.assertEquals(ErrorCode.CREDENTIAL_EXPIRE_DATE_ILLEGAL.getCode(),
             response.getErrorCode().intValue());
         Assert.assertNull(response.getResult());
     }
@@ -676,7 +700,7 @@ public class TestCreateCredentialPojo extends TestBaseServcie {
             credentialPojoService.createCredential(createCredentialPojoArgs);
         LogUtil.info(logger, "createCredentialPojo", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(),  response.getErrorCode().intValue());
 
         ResponseData<Boolean> verify = credentialPojoService
             .verify(createCredentialPojoArgs.getIssuer(), response.getResult());
