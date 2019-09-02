@@ -276,6 +276,7 @@ public class TestBaseUtil {
         return cptJsonSchemaData;
     }
 
+
     /**
      * build default CptMapArgs.
      *
