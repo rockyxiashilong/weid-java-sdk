@@ -91,6 +91,8 @@ public class TestCreateSelectiveCredential extends TestBaseServcie {
         WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weIdResult);
         CredentialPojo doubleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
             .getResult();
+        LogUtil.info(logger, "multipleSignSDinfo", selectiveCredentialPojo);
+        LogUtil.info(logger, "multipleSignSDinfo", doubleSigned);
         Assert.assertEquals(doubleSigned.getCptId(),
             CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
 
@@ -102,6 +104,7 @@ public class TestCreateSelectiveCredential extends TestBaseServcie {
         CredentialPojo tripleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
             .getResult();
         verifyResp = credentialPojoService.verify(doubleSigned.getIssuer(), tripleSigned);
+        LogUtil.info(logger, "tripleSigned message", tripleSigned);
         Assert.assertTrue(verifyResp.getResult());
     }
 

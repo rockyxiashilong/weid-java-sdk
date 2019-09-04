@@ -144,7 +144,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
 
         //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
+        ResponseData<Boolean> verifyInfo = evidenceService.verify(credentialPojo, eviAddr);
         LogUtil.info(logger, "verifyEvidence", verifyInfo);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
     }
@@ -230,7 +230,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
 
         //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
+        ResponseData<Boolean> verifyInfo = evidenceService.verify(selectiveCredentialPojo, eviAddr);
         LogUtil.info(logger, "verifyEvidence", verifyInfo);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
     }
@@ -439,7 +439,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         CreateWeIdDataResult tempCreateWeIdResultWithSetAttr =
             super.copyCreateWeId(createWeIdResultWithSetAttr);
         CredentialPojo tempCredential = copyCredentialPojo(credentialPojo);
-        tempCredential.setIssuer("did:weid:101:0x39e5e6f663ef77409144014ceb063713b656");
+        tempCredential.setIssuer("did:weid:101:0x39e5e6f663ef77409144014ceb063713b656ffff");
         List<String> signers =
             new ArrayList<>(Arrays.asList(createWeIdResultWithSetAttr.getWeId()));
         ResponseData<String> response = evidenceService.createEvidence(
@@ -653,16 +653,6 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         LogUtil.info(logger, "createEvidence", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
     }
 
     /**
@@ -822,7 +812,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
     }
 
     /**
-     * case32: signers is null.
+     * case32:when signers is null,create evidence success.
      */
     @Test
     public void testCreateEvidenceByCredential_signersNull() {
@@ -842,8 +832,50 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
 
         //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
+        ResponseData<Boolean> verifyInfo = evidenceService.verify(credentialPojo, eviAddr);
         LogUtil.info(logger, "verifyEvidence", verifyInfo);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+    }
+
+    /**
+     * case32:when signers is blank,create evidence success.
+     */
+    @Test
+    public void testCreateEvidenceByCredential_signersBlank() {
+        CreateWeIdDataResult tempCreateWeIdResultWithSetAttr =
+            super.copyCreateWeId(createWeIdResultWithSetAttr);
+        ResponseData<String> response = evidenceService
+            .createEvidence(credentialPojo, new ArrayList<>(),
+                createWeIdResult.getUserWeIdPrivateKey());
+        LogUtil.info(logger, "createEvidenceWithSigners", response);
+
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+
+        //get evidence
+        String eviAddr = response.getResult();
+        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
+        LogUtil.info(logger, "getEvidence", eviInfo);
+        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
+
+        //verify evidence
+        ResponseData<Boolean> verifyInfo = evidenceService.verify(credentialPojo, eviAddr);
+        LogUtil.info(logger, "verifyEvidence", verifyInfo);
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+    }
+
+    /**
+     * case33:when signers is a ,private key is b,then create evidence fail.
+     */
+    @Test
+    public void testCreateEvidenceByCredential_signersNotMatchPrivateKey() {
+        CreateWeIdDataResult tempCreateWeIdResultWithSetAttr =
+            super.copyCreateWeId(createWeIdResultWithSetAttr);
+        ResponseData<String> response = evidenceService.createEvidence(
+            credentialPojo, new ArrayList<>(Arrays.asList(createWeIdResultWithSetAttr.getWeId())),
+                createWeIdResult.getUserWeIdPrivateKey());
+        LogUtil.info(logger, "createEvidenceWithSigners", response);
+
+        Assert.assertEquals(ErrorCode.CREDENTIAL_PRIVATE_KEY_NOT_EXISTS.getCode(),
+            response.getErrorCode().intValue());
     }
 }
