@@ -134,6 +134,34 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
+     * case3:signature CredentialPojoList contain credentialPojo and signed credentialPojo
+     * ,then signed again.
+     */
+    @Test
+    public void testAddSignature_listContainSignAndOriginCredentialPojo() {
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(credentialPojoNew);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+        CredentialPojo doubleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
+            .getResult();
+        LogUtil.info(logger, "selectiveCredentialPojo&credentialPojo", doubleSigned);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        Assert.assertTrue(verifyResp.getResult());
+        credPojoList.add(doubleSigned);
+        credPojoList.add(selectiveCredentialPojo);
+        CredentialPojo tripleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
+            .getResult();
+        verifyResp = credentialPojoService.verify(doubleSigned.getIssuer(), tripleSigned);
+        LogUtil.info(logger, "tripleSigned message", tripleSigned);
+        Assert.assertTrue(verifyResp.getResult());
+    }
+
+    /**
      * case4:signature selectiveCredentialPojo are same.
      */
     @Test
@@ -378,6 +406,32 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
+     * case16:signed credentialPojo.claim is null should verify fail.
+     */
+    @Test
+    public void testAddSignature_SignClaimNull() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setClaim(null);
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
      * case16:modify signed credentialPojo.proof should verify fail.
      */
     @Test
@@ -431,10 +485,10 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
-     * case14:signedcredentialPojo disclosure.
+     * case14:signedcredentialPojo disclosure fail.
      */
     @Test
-    public void testAddSignature_signed() {
+    public void testAddSignature_signedCredentialPojoDisclosure() {
         List<CredentialPojo> credPojoList = new ArrayList<>();
         credPojoList.add(credentialPojo);
         WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
@@ -454,5 +508,85 @@ public class TestAddSignature extends TestBaseServcie {
         LogUtil.info(logger, "TestCreateSelectiveCredential", selecres);
         Assert.assertEquals(ErrorCode.CPT_ID_ILLEGAL.getCode(), selecres.getErrorCode().intValue());
     }
+
+    /**
+     * case14:set signed credentialPojo content Null should  verify fail.
+     */
+    @Test
+    public void testAddSignature_setSignContentNull() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setContext(null);
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CONTEXT_NOT_EXISTS.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case14:set signed credentialPojo content blank should  verify fail.
+     */
+    @Test
+    public void testAddSignature_setSignContentBlank() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setContext("");
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CONTEXT_NOT_EXISTS.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case14:modify signed credentialPojo content should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifySignContent() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setContext(credentialPojo.getContext().substring(0,9));
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+
 
 }
