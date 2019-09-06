@@ -1,6 +1,7 @@
 package com.webank.weid.full.credentialpojo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +76,36 @@ public class TestAddSignature extends TestBaseServcie {
         verifyResp = credentialPojoService.verify(doubleSigned.getIssuer(), tripleSigned);
         LogUtil.info(logger, "tripleSigned message", tripleSigned);
         Assert.assertTrue(verifyResp.getResult());
+    }
+
+    /**
+     * case1:signature one credentialPojo success,then signed many times.
+     */
+    @Test
+    public void testAddSignature_signedManyTimes() {
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+        CredentialPojo doubleSigned = credentialPojoService.addSignature(credPojoList, callerAuth)
+            .getResult();
+        LogUtil.info(logger, "doubleSigned selectiveCredentialPojo", doubleSigned);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        Assert.assertTrue(verifyResp.getResult());
+
+        //signed many times
+        for (int i = 0; i < 3; i++) {
+            CredentialPojo tripleSigned = credentialPojoService.addSignature(credPojoList,
+                callerAuth).getResult();
+            verifyResp = credentialPojoService.verify(tripleSigned.getIssuer(), tripleSigned);
+            LogUtil.info(logger, "verify signed response", verifyResp);
+            LogUtil.info(logger, "signed credentialPojo", tripleSigned);
+            Assert.assertTrue(verifyResp.getResult());
+            credPojoList.add(tripleSigned);
+        }
     }
 
     /**
@@ -327,6 +358,32 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
+     * case12:signedCredentialPojo issuer is not exist.
+     */
+    @Test
+    public void testAddSignature_signedIssuerNotExist() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "signed issuer not exist", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setIssuer("did:weid:101:0x39e5e6f663ef77409144014ceb063713b6ffffff");
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(weid.getWeId(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
      * case13:modify credentialPojo.cptid should signed success but verify fail.
      */
     @Test
@@ -353,7 +410,33 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
-     * case14:modify signed credentialPojo.cptid(106) should  verify fail.
+     * case13:set signed credentialPojo.cptId that not exist blockChain should verify fail.
+     */
+    @Test
+    public void testAddSignature_signedCptIdNotExist() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "signed credentialPojo", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        doubleSigned.setCptId(888666);
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CPT_NOT_EXISTS.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case14:modify signed credentialPojo.cptid=106 should  verify fail.
      */
     @Test
     public void testAddSignature_modifySignCptId() {
@@ -382,7 +465,7 @@ public class TestAddSignature extends TestBaseServcie {
      * case15:modify signed credentialPojo.claim should verify fail.
      */
     @Test
-    public void testAddSignature_modifySignClaim() {
+    public void testAddSignature_modifySignedClaim() {
         CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
         List<CredentialPojo> credPojoList = new ArrayList<>();
         credPojoList.add(copyCredentialPojo);
@@ -406,11 +489,14 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
-     * case16:signed credentialPojo.claim is null should verify fail.
+     * case15:modify credentialPojo.claim should verify fail.
      */
     @Test
-    public void testAddSignature_SignClaimNull() {
+    public void testAddSignature_modifyCredentialPojoClaim() {
         CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        Map<String,Object> claim =  credentialPojo.getClaim();
+        claim.remove("age");
+        copyCredentialPojo.setClaim(claim);
         List<CredentialPojo> credPojoList = new ArrayList<>();
         credPojoList.add(copyCredentialPojo);
         credPojoList.add(credentialPojo);
@@ -423,12 +509,56 @@ public class TestAddSignature extends TestBaseServcie {
         Assert.assertEquals(doubleSigned.getCptId(),
             CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
 
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:signed credentialPojo.claim is null should verify fail.
+     */
+    @Test
+    public void testAddSignature_SignedClaimNull() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        CredentialPojo doubleSigned = response.getResult();
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        Assert.assertEquals(2,doubleSigned.getClaim().size());
+
         doubleSigned.setClaim(null);
         ResponseData<Boolean> verifyResp = credentialPojoService
             .verify(doubleSigned.getIssuer(), doubleSigned);
         LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
         Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
             verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:set credentialPojo.claim null success ，but verify should fail.
+     */
+    @Test
+    public void testAddSignature_credentialPojoClaimNull() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        copyCredentialPojo.setClaim(null);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "issuer null", response);
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -455,6 +585,191 @@ public class TestAddSignature extends TestBaseServcie {
             .verify(doubleSigned.getIssuer(), doubleSigned);
         LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
         Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify credentialPojo.proof should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialProof() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        Map<String, Object> proof = copyCredentialPojo.getProof();
+        proof.remove("creator");
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        Assert.assertEquals(2, doubleSigned.getClaim().size());
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify credentialPojo.proof key-value verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialProofValue() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        Map<String, Object> proof = copyCredentialPojo.getProof();
+        proof.replace("creator",credentialPojo.getIssuer());
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        ArrayList<String> innerCredentialList =
+            (ArrayList) doubleSigned.getClaim().get("credentialList");
+        Assert.assertEquals(2, innerCredentialList.size());
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify credentialPojo.proof.type should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialProofTypeValue() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        Map<String, Object> salt = (Map<String, Object>) copyCredentialPojo.getProof().get("salt");
+        salt.replace("type","123456");
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        ArrayList<String> innerCredentialList =
+            (ArrayList) doubleSigned.getClaim().get("credentialList");
+        Assert.assertEquals(2, innerCredentialList.size());
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify credentialPojo.issuanceDate should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialIssuanceDate() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        long currentTime = System.currentTimeMillis()/1000;
+        System.out.println(currentTime);
+        copyCredentialPojo.setIssuanceDate(currentTime);
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        ArrayList<String> innerCredentialList =
+            (ArrayList) doubleSigned.getClaim().get("credentialList");
+        Assert.assertEquals(2, innerCredentialList.size());
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify credentialPojo.expirationDate should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialExpirationDate() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        long currentTime = System.currentTimeMillis()/1000 + 1000000;
+        System.out.println(currentTime);
+        copyCredentialPojo.setExpirationDate(currentTime);
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        ArrayList<String> innerCredentialList =
+            (ArrayList) doubleSigned.getClaim().get("credentialList");
+        Assert.assertEquals(2, innerCredentialList.size());
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
+
+    /**
+     * case16:modify signed credentialPojo.expirationDate should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifySignExpirationDate() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
+
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "add Signature info", response);
+
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+        ArrayList<String> innerCredentialList =
+            (ArrayList) doubleSigned.getClaim().get("credentialList");
+        Assert.assertEquals(1, innerCredentialList.size());
+        long expireTime = System.currentTimeMillis()/1000 + 1000000;
+        doubleSigned.setExpirationDate(expireTime);
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
             verifyResp.getErrorCode().intValue());
     }
 
@@ -583,10 +898,34 @@ public class TestAddSignature extends TestBaseServcie {
         ResponseData<Boolean> verifyResp = credentialPojoService
             .verify(doubleSigned.getIssuer(), doubleSigned);
         LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
-        Assert.assertEquals(ErrorCode.CREDENTIAL_CLAIM_DATA_ILLEGAL.getCode(),
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
             verifyResp.getErrorCode().intValue());
     }
 
+    /**
+     * case14:modify credentialPojo content should verify fail.
+     */
+    @Test
+    public void testAddSignature_modifyCredentialContent() {
+        CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
+        List<CredentialPojo> credPojoList = new ArrayList<>();
+        copyCredentialPojo.setContext(copyCredentialPojo.getContext().substring(0,10));
+        credPojoList.add(copyCredentialPojo);
+        credPojoList.add(credentialPojo);
+        WeIdAuthentication callerAuth = TestBaseUtil.buildWeIdAuthentication(weid);
 
+        ResponseData<CredentialPojo> response = credentialPojoService.addSignature(credPojoList,
+            callerAuth);
+        LogUtil.info(logger, "issuer null", response);
 
+        CredentialPojo doubleSigned = response.getResult();
+        Assert.assertEquals(doubleSigned.getCptId(),
+            CredentialConstant.CREDENTIALPOJO_EMBEDDED_SIGNATURE_CPT);
+
+        ResponseData<Boolean> verifyResp = credentialPojoService
+            .verify(doubleSigned.getIssuer(), doubleSigned);
+        LogUtil.info(logger, "verify signed credentialPojo", verifyResp);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_ISSUER_MISMATCH.getCode(),
+            verifyResp.getErrorCode().intValue());
+    }
 }

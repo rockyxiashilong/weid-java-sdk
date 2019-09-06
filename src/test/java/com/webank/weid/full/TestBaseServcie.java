@@ -105,6 +105,11 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
     protected static volatile CreateCredentialArgs createCredentialArgs = null;
 
     /**
+     * parameters needed to create credentials.
+     */
+    protected static volatile CreateCredentialArgs createCredentialArgsNew = null;
+
+    /**
      * parameters needed to create credentialPojos.
      */
     protected static volatile CreateCredentialPojoArgs<Map<String, Object>>
@@ -234,6 +239,13 @@ public abstract class TestBaseServcie extends BaseTest implements MockMysqlDrive
                 TestBaseUtil.buildCreateCredentialArgs(createWeIdResultWithSetAttr);
             cptBaseInfo = this.registerCpt(createWeIdResultWithSetAttr, registerCptArgs);
             createCredentialArgs.setCptId(cptBaseInfo.getCptId());
+        }
+        if (createCredentialArgsNew == null) {
+            registerCptArgs = TestBaseUtil.buildCptArgs(createWeIdNew);
+            createCredentialArgsNew =
+                TestBaseUtil.buildCreateCredentialArgs(createWeIdNew);
+            cptBaseInfo = this.registerCpt(createWeIdNew, registerCptArgs);
+            createCredentialArgsNew.setCptId(cptBaseInfo.getCptId());
         }
         if (createCredentialPojoArgs == null) {
             createCredentialPojoArgs =
