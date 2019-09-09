@@ -599,6 +599,11 @@ public class TestCreateSelectiveCredential extends TestBaseServcie {
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(),
             response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
+
+        ResponseData<Boolean> verify = credentialPojoService.verify(
+            credentialPojo.getIssuer(), response.getResult());
+        LogUtil.info(logger, "verify selective CredentialPojo", verify);
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verify.getErrorCode().intValue());
     }
 
     /**
@@ -626,7 +631,7 @@ public class TestCreateSelectiveCredential extends TestBaseServcie {
     public void testCreateSelectiveCredential_claimPolicyRepeat() {
 
         ClaimPolicy claimPolicy = new ClaimPolicy();
-        claimPolicy.setFieldsToBeDisclosed("{\"name\":1,\"gender\":0,\"age\":1,\"id\":1,\"id\":1}");
+        claimPolicy.setFieldsToBeDisclosed("{\"name\":1,\"gender\":0,\"age\":1,\"id\":1,\"id\":0}");
 
         ResponseData<CredentialPojo> response =
             credentialPojoService.createSelectiveCredential(credentialPojo, claimPolicy);
@@ -634,6 +639,66 @@ public class TestCreateSelectiveCredential extends TestBaseServcie {
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
+
+        ResponseData<Boolean> verify = credentialPojoService.verify(credentialPojo.getIssuer(),
+            response.getResult());
+        LogUtil.info(logger, "verif credentialPojo", verify);
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verify.getErrorCode().intValue());
+    }
+
+    /**
+     * case：selectiveCredentialPojo can not disclosed again.
+     */
+    @Test
+    public void testCreateSelectiveCredential_selectiveCredentialDisclosed() {
+
+        ClaimPolicy claimPolicy = new ClaimPolicy();
+        claimPolicy.setFieldsToBeDisclosed("{\"name\":1,\"gender\":0,\"age\":1,\"id\":0}");
+
+        ResponseData<CredentialPojo> response =
+            credentialPojoService.createSelectiveCredential(credentialPojo, claimPolicy);
+        LogUtil.info(logger, "TestCreateSelectiveCredential", response);
+
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertNotNull(response.getResult());
+
+        ResponseData<Boolean> verify = credentialPojoService.verify(credentialPojo.getIssuer(),
+            response.getResult());
+        LogUtil.info(logger, "verify credentialPojo", verify);
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verify.getErrorCode().intValue());
+
+        //disclosed selective credentialPojo again
+        ResponseData<CredentialPojo> repeatRes
+            = credentialPojoService.createSelectiveCredential(response.getResult(), claimPolicy);
+        LogUtil.info(logger, "disclose selective credentialPojo", repeatRes);
+        Assert.assertEquals(ErrorCode.CREDENTIAL_RE_DISCLOSED.getCode(),
+            repeatRes.getErrorCode().intValue());
+    }
+
+    /**
+     * case：selectiveCredentialPojo can not disclosed again.
+     */
+    @Test
+    public void testCreateSelectiveCredential_selectiveCredentialDefaultValue() {
+
+        ClaimPolicy claimPolicy = new ClaimPolicy();
+        claimPolicy.setFieldsToBeDisclosed("{\"id\":1}");
+
+        ResponseData<CredentialPojo> response =
+            credentialPojoService.createSelectiveCredential(credentialPojo, claimPolicy);
+        LogUtil.info(logger, "TestCreateSelectiveCredential", response);
+
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertNotNull(response.getResult());
+        //0表示不披露，1表示披露
+        Map<String, Object> salt
+            = (Map<String, Object>) response.getResult().getProof().get("salt");
+        Assert.assertEquals("0", salt.get("name"));
+
+        ResponseData<Boolean> verify = credentialPojoService.verify(credentialPojo.getIssuer(),
+            response.getResult());
+        LogUtil.info(logger, "verify credentialPojo", verify);
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verify.getErrorCode().intValue());
     }
 
     /**
