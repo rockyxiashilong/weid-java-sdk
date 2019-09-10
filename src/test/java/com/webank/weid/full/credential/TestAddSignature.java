@@ -138,7 +138,7 @@ public class TestAddSignature extends TestBaseServcie {
     }
 
     /**
-     * case6:credentialList is blank
+     * case6:credentialList is blank.
      */
     @Test
     public void testAddSignature_listBlank() {
