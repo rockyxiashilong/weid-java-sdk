@@ -141,7 +141,6 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         String eviAddr = response.getResult();
         ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
         LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
 
         //verify evidence
         ResponseData<Boolean> verifyInfo = evidenceService.verify(credentialPojo, eviAddr);
@@ -198,10 +197,10 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         String eviAddr = response.getResult();
         ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
         LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), eviInfo.getErrorCode().intValue());
 
         //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
+        ResponseData<Boolean> verifyInfo = evidenceService.verify(selectiveCredentialPojo, eviAddr);
         LogUtil.info(logger, "verifyEvidence", verifyInfo);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
     }
@@ -475,18 +474,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -505,17 +493,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -563,17 +541,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -592,17 +560,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -621,17 +579,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -652,7 +600,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -671,17 +619,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -700,17 +638,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
             tempCredential, signers, createWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidence", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(tempCredential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.ILLEGAL_INPUT.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -730,18 +658,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
                 tempCreateWeIdResultWithSetAttr.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidenceWithSigners", response);
 
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-
-        //get evidence
-        String eviAddr = response.getResult();
-        ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
-        LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
-
-        //verify evidence
-        ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
-        LogUtil.info(logger, "verifyEvidence", verifyInfo);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), verifyInfo.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.WEID_INVALID.getCode(), response.getErrorCode().intValue());
     }
 
     /**
@@ -759,8 +676,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         signers.add(createWeIdResult.getWeId());
         System.out.println(signers);
         ResponseData<String> response = evidenceService
-            .createEvidence(credential, signers,
-                createWeIdResult.getUserWeIdPrivateKey());
+            .createEvidence(credential, signers, createWeIdResult.getUserWeIdPrivateKey());
         LogUtil.info(logger, "createEvidenceWithSigners", response);
 
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
@@ -769,7 +685,7 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         String eviAddr = response.getResult();
         ResponseData<EvidenceInfo> eviInfo = evidenceService.getEvidence(eviAddr);
         LogUtil.info(logger, "getEvidence", eviInfo);
-        //Assert.assertEquals(signers.get(0), eviInfo.getResult().getSigners().get(0));
+        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), eviInfo.getErrorCode().intValue());
 
         //verify evidence
         ResponseData<Boolean> verifyInfo = evidenceService.verify(credential, eviAddr);
@@ -787,11 +703,10 @@ public class TestCreateEvidenceWithSigners extends TestBaseServcie {
         List<String> signers = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             String weid = tempCreateWeIdResultWithSetAttr.getWeId();
-            signers.add(weid.substring(0, weid.length()-1)+i);
+            signers.add(weid.substring(0, weid.length() - 1) + i);
         }
         signers.add(tempCreateWeIdResultWithSetAttr.getWeId());
         signers.add(createWeIdResult.getWeId());
-        System.out.println(signers);
         ResponseData<String> response = evidenceService
             .createEvidence(credential, signers,
                 createWeIdResult.getUserWeIdPrivateKey());
