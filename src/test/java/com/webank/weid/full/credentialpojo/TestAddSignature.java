@@ -332,6 +332,7 @@ public class TestAddSignature extends TestBaseServcie {
     /**
      * case14:credential issuer is not exist.
      */
+    @Ignore
     @Test
     public void testAddSignature_issuerNotExist() {
         CredentialPojo copyCredentialPojo = copyCredentialPojo(credentialPojo);
