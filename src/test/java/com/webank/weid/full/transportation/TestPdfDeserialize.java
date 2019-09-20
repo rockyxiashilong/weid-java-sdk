@@ -8,8 +8,10 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 
+import com.sun.xml.internal.fastinfoset.tools.FI_DOM_Or_XML_DOM_SAX_SAXEvent;
 import mockit.Mock;
 import mockit.MockUp;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -384,8 +386,21 @@ public class TestPdfDeserialize extends TestBaseTransportation {
         Assert.assertNotNull(response.getResult());
 
         //Deserialize
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        File file = new File("tmp.pdf");
+        PDDocument document = null;
+        try {
+            document = PDDocument.load(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            document.save(out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ResponseData<PresentationE> resDeserialize =
-            TransportationFactory.newPdfTransportation().deserialize(response.getResult(),
+            TransportationFactory.newPdfTransportation().deserialize(out,
                 PresentationE.class, weIdAuthentication);
         LogUtil.info(logger, "Deserialize", resDeserialize);
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), resDeserialize.getErrorCode().intValue());
