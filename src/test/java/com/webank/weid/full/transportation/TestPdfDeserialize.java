@@ -242,7 +242,7 @@ public class TestPdfDeserialize extends TestBaseTransportation {
     }
 
     /**
-     * 修改 presentation，设置为两个重复的credentialPojo，序列化成功，然后反序列化成功
+     * 修改 presentation，设置为两个重复的credentialPojo，序列化成功，然后反序列化成功.
      */
     @Test
     public void testDeserialize_credentialPojoDouble() {

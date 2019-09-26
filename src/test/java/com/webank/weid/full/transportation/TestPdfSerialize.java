@@ -114,6 +114,7 @@ public class TestPdfSerialize extends TestBaseTransportation {
         Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
     }
+
     /**
      * biggest length test.
      */
@@ -121,8 +122,8 @@ public class TestPdfSerialize extends TestBaseTransportation {
     public void testSerialize_biggestLength() {
         PresentationE copyPresention = DataToolUtils.clone(presentation4MlCpt);
         List<CredentialPojo> credentialPojoList = copyPresention.getVerifiableCredential();
-        CredentialPojo credentialPojo = credentialPojoList.size()==1
-            ? credentialPojoList.get(0):credentialPojoNew;
+        CredentialPojo credentialPojo = credentialPojoList.size() == 1
+            ? credentialPojoList.get(0) : credentialPojoNew;
         for (int i = 0; i < 5; i++) {
             credentialPojoList.add(credentialPojo);
         }
@@ -161,8 +162,8 @@ public class TestPdfSerialize extends TestBaseTransportation {
                 weIdAuthentication);
 
         LogUtil.info(logger, "serialize", response);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        Assert.assertNotNull(response.getResult());
+        Assert.assertEquals(ErrorCode.TRANSPORTATION_PDF_TRANSFER_ERROR.getCode(),
+            response.getErrorCode().intValue());
     }
 
     /**
@@ -228,7 +229,8 @@ public class TestPdfSerialize extends TestBaseTransportation {
                 weIdAuthentication);
 
         LogUtil.info(logger, "serialize", response);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.TRANSPORTATION_PDF_TRANSFER_ERROR.getCode(),
+            response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
     }
 
@@ -300,8 +302,8 @@ public class TestPdfSerialize extends TestBaseTransportation {
                 weIdAuthentication);
 
         LogUtil.info(logger, "serialize", response);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
-        Assert.assertNotNull(response.getResult());
+        Assert.assertEquals(ErrorCode.TRANSPORTATION_PDF_TRANSFER_ERROR.getCode(),
+            response.getErrorCode().intValue());
     }
 
     /**
@@ -365,7 +367,8 @@ public class TestPdfSerialize extends TestBaseTransportation {
                 weIdAuthentication);
 
         LogUtil.info(logger, "serialize", response);
-        Assert.assertEquals(ErrorCode.SUCCESS.getCode(), response.getErrorCode().intValue());
+        Assert.assertEquals(ErrorCode.TRANSPORTATION_PDF_TRANSFER_ERROR.getCode(),
+            response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
     }
 
@@ -553,6 +556,25 @@ public class TestPdfSerialize extends TestBaseTransportation {
                 ErrorCode.SUCCESS.getCode(),
                 response.getErrorCode().intValue());
         Assert.assertNotNull(response.getResult());
+    }
+
+    /**
+     * 指定复杂PDF模板测试.
+     */
+    @Test
+    public void testSerializeCase_com() {
+        ResponseData<OutputStream> response = TransportationFactory
+            .newPdfTransportation()
+            .serialize(
+                presentation,
+                new ProtocolProperty(EncodeType.ORIGINAL),
+                weIdAuthentication,
+                "src/test/resources/test-template-complex.pdf"
+            );
+        LogUtil.info(logger, "serialize", response);
+        Assert.assertEquals(
+            ErrorCode.TRANSPORTATION_PDF_TRANSFER_ERROR.getCode(),
+            response.getErrorCode().intValue());
     }
 
     /**
